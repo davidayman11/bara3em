@@ -13,7 +13,12 @@
           "package_name": "com.example.bara3em"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "262757508649-0m5cepqkbpisi0dm4a3shciq64qj7nvu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8"
@@ -21,7 +26,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "262757508649-0m5cepqkbpisi0dm4a3shciq64qj7nvu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
