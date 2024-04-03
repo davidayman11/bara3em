@@ -1,14 +1,14 @@
 buildscript {
-    ext.kotlin_version = '1.9.23'
+    ext.kotlin_version = '1.7.10'
     repositories {
         google()
-        jcenter() // Include JCenter repository
+        jcenter() // Add this line
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23" // Use variable for Kotlin version
+        classpath 'com.android.tools.build:gradle:8.0.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
         classpath 'com.google.gms:google-services:4.4.1'
     }
 }
@@ -16,7 +16,7 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter() // Include JCenter repository
+        jcenter() // Add this line
         mavenCentral()
     }
 }
@@ -24,6 +24,8 @@ allprojects {
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
     project.evaluationDependsOn(':app')
 }
 

@@ -9,13 +9,13 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key); // Fix constructor issue
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+        colorScheme: ColorScheme.light(), // Use ColorScheme.light() or ColorScheme.dark()
         useMaterial3: true,
       ),
       home: WelcomePage(),
