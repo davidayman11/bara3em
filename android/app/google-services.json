@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "262757508649",
+    "firebase_url": "https://bara3em-ee851-default-rtdb.firebaseio.com",
+    "project_id": "bara3em-ee851",
+    "storage_bucket": "bara3em-ee851.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:262757508649:android:9efce8f15c47409ad9de38",
+        "android_client_info": {
+          "package_name": "com.example.bara3em"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
