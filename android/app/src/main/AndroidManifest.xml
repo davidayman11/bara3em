@@ -2,7 +2,7 @@
     <application
         android:label="bara3em"
         android:name="${applicationName}"
-        android:icon="@drawable/launch_background">
+        android:icon="@mipmap/ic_launcher"> <!-- Change this to point to your app's launcher icon -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
