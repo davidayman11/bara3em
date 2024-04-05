@@ -29,7 +29,7 @@ class _DataPageState extends State<DataPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Data Page'),
+        title: Text('Database'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -42,17 +42,17 @@ class _DataPageState extends State<DataPage> {
               decoration: InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      _searchController.clear();
-                      _dataStream = FirebaseFirestore.instance.collection('bara3em_database').snapshots();
-                    });
-                  },
+                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20), // Adjust padding
+                border: OutlineInputBorder( // Defines the border
+                  borderRadius: BorderRadius.circular(30.0), // Adjust the corner radius for rounder edges
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+                enabledBorder: OutlineInputBorder( // Border style when TextField is enabled
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                focusedBorder: OutlineInputBorder( // Border style when TextField is focused
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
               ),
             ),
@@ -96,8 +96,8 @@ class _DataPageState extends State<DataPage> {
                               borderRadius: BorderRadius.circular(10.0),
                               child: Image.asset(
                                 'img/5.jpg',
-                                width: 120,
-                                height: 120,
+                                width: 100,
+                                height: 100,
                                 fit: BoxFit.cover,
                               ),
                             ),

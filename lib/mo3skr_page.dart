@@ -29,7 +29,7 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mo3skr Page'),
+        title: Text('Mo3skr'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -42,17 +42,17 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
               decoration: InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      _searchController.clear();
-                      _mo3skrStream = _firestore.collection('mo3skr').snapshots();
-                    });
-                  },
+                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20), // Adjust padding
+                border: OutlineInputBorder( // Defines the border
+                  borderRadius: BorderRadius.circular(30.0), // Adjust the corner radius for rounder edges
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+                enabledBorder: OutlineInputBorder( // Border style when TextField is enabled
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                focusedBorder: OutlineInputBorder( // Border style when TextField is focused
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
               ),
             ),

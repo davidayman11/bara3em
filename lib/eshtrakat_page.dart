@@ -30,7 +30,7 @@ class _EshtrakPageState extends State<EshtrakPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Eshtrak Page'),
+        title: Text('Eshtrakat'),
         actions: [
           IconButton(
             icon: Icon(Icons.search),
@@ -54,17 +54,17 @@ class _EshtrakPageState extends State<EshtrakPage> {
               decoration: InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      _searchController.clear();
-                      _eshtrakStream = _firestore.collection('eshtrakat').snapshots();
-                    });
-                  },
+                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20), // Adjust padding
+                border: OutlineInputBorder( // Defines the border
+                  borderRadius: BorderRadius.circular(30.0), // Adjust the corner radius for rounder edges
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+                enabledBorder: OutlineInputBorder( // Border style when TextField is enabled
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                focusedBorder: OutlineInputBorder( // Border style when TextField is focused
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
               ),
             ),

@@ -11,7 +11,7 @@ class MalyaPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Malya Page'),
+        title: Text('Malya'),
       ),
       body: Center(
         child: Column(

@@ -33,7 +33,6 @@ class _AttendancePageState extends State<AttendancePage> {
           .toList();
     });
   }
-
   void _search(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -53,11 +52,14 @@ class _AttendancePageState extends State<AttendancePage> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Attendance'),
+      ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -67,14 +69,17 @@ class _AttendancePageState extends State<AttendancePage> {
               decoration: InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      _searchController.clear();
-                      _attendanceStream = _fetchAttendance();
-                    });
-                  },
+                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20), // Adjust padding
+                border: OutlineInputBorder( // Defines the border
+                  borderRadius: BorderRadius.circular(30.0), // Adjust the corner radius for rounder edges
+                ),
+                enabledBorder: OutlineInputBorder( // Border style when TextField is enabled
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                focusedBorder: OutlineInputBorder( // Border style when TextField is focused
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
               ),
             ),
@@ -89,48 +94,44 @@ class _AttendancePageState extends State<AttendancePage> {
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
-                final attendanceRecords = snapshot.data ?? [];
-                if (attendanceRecords.isEmpty) {
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Center(child: Text('No data found'));
                 }
+                final attendanceRecords = snapshot.data!;
                 return ListView.builder(
                   itemCount: attendanceRecords.length,
                   itemBuilder: (context, index) {
                     final record = attendanceRecords[index];
                     final name = record['name'] ?? 'No name provided';
-                    return Card(
-                      elevation: 3,
-                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      child: ListTile(
-                        title: Text(name),
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text('Details for $name'),
-                                content: SingleChildScrollView(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Name: $name'),
-                                      // Add more fields here if needed
-                                    ],
-                                  ),
+                    return ListTile(
+                      title: Text(name),
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Details for $name'),
+                              content: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Name: $name'),
+                                    // Add more fields here if needed
+                                  ],
                                 ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('Close'),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Close'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
                     );
                   },
                 );
