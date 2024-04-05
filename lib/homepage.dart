@@ -28,57 +28,60 @@ class _Bara3emHomePageState extends State<Bara3emHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      drawer: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.7, // Adjust the width as needed
-        child: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              UserAccountsDrawerHeader(
-                accountName: Text('David'),
-                accountEmail: null, // No email displayed
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.blue,
-                  ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            UserAccountsDrawerHeader(
+              accountName: Text(
+                'David Ayman',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                decoration: BoxDecoration(
+              ),
+              accountEmail: null, // No email displayed
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(
+                  Icons.person,
                   color: Colors.blue,
                 ),
               ),
-              ListTile(
-                leading: Icon(Icons.person),
-                title: Text('Profile'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ProfilePage()),
-                  );
-                },
+              decoration: BoxDecoration(
+                color: Colors.blue,
               ),
-              ListTile(
-                leading: Icon(Icons.settings),
-                title: Text('Settings'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SettingsPage()),
-                  );
-                },
-              ),
-              Divider(),
-              ListTile(
-                leading: Icon(Icons.logout),
-                title: Text('Sign Out'),
-                onTap: () {
-                  // Sign out logic goes here
-                  // You can add your sign out logic, such as clearing user session, navigating to login screen, etc.
-                },
-              ),
-            ],
-          ),
+            ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text('Profile'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfilePage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Settings'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsPage()),
+                );
+              },
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Sign Out'),
+              onTap: () {
+                // Sign out logic goes here
+                // You can add your sign out logic, such as clearing user session, navigating to login screen, etc.
+              },
+            ),
+          ],
         ),
       ),
       body: _children[_currentIndex],
