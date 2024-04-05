@@ -10,11 +10,19 @@ class DataPage extends StatefulWidget {
 
 class _DataPageState extends State<DataPage> {
   late Stream<QuerySnapshot> _dataStream;
+  late TextEditingController _searchController;
 
   @override
   void initState() {
     super.initState();
     _dataStream = FirebaseFirestore.instance.collection('bara3em_database').snapshots();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -22,141 +30,137 @@ class _DataPageState extends State<DataPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Data Page'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () async {
-              // Handle the selected item if needed
-            },
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _search,
+              decoration: InputDecoration(
+                labelText: 'Search',
+                prefixIcon: Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      _searchController.clear();
+                      _dataStream = FirebaseFirestore.instance.collection('bara3em_database').snapshots();
+                    });
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _dataStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('No data available'));
+                }
+                return GridView.builder(
+                  padding: EdgeInsets.all(8.0),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 8.0,
+                    mainAxisSpacing: 8.0,
+                  ),
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    var document = snapshot.data!.docs[index];
+                    return GestureDetector(
+                      onTap: () {
+                        _showDetailsDialog(context, document);
+                      },
+                      child: Card(
+                        elevation: 4.0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10.0),
+                              child: Image.asset(
+                                'img/5.jpg',
+                                width: 120,
+                                height: 120,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            SizedBox(height: 8.0),
+                            Text(
+                              document['name'] ?? 'No Name',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
-      body: StreamBuilder(
-        stream: _dataStream,
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (snapshot.hasData && snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No data available'));
-          }
-          return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              var document = snapshot.data!.docs[index];
-              return GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Details'),
-                        content: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('Name: ${document['name'] ?? 'Unknown'}'),
-                            Text('Phone: ${document['phone'] ?? 'Unknown'}'),
-                            Text('Team: ${document['team'] ?? 'Unknown'}'),
-                            // Add more details here as needed
-                          ],
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('Close'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: ListTile(
-                  title: Text(document['name'] ?? 'No Name'),
-                  // Add more ListTile properties to display additional data from the document
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-class CustomSearchDelegate extends SearchDelegate<String> {
-  final Stream<QuerySnapshot> dataStream;
-
-  CustomSearchDelegate(this.dataStream);
-
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, '');
-      },
     );
   }
 
-  @override
-  Widget buildResults(BuildContext context) {
-    return _buildSearchResults(context);
+  void _search(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _dataStream = FirebaseFirestore.instance.collection('bara3em_database').snapshots();
+      } else {
+        _dataStream = FirebaseFirestore.instance
+            .collection('bara3em_database')
+            .where('name', isGreaterThanOrEqualTo: query, isLessThanOrEqualTo: query + '\uf8ff')
+            .snapshots();
+      }
+    });
   }
 
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return _buildSearchResults(context);
-  }
-
-  Widget _buildSearchResults(BuildContext context) {
-    return StreamBuilder(
-      stream: dataStream,
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text('No data available'));
-        }
-
-        final List<QueryDocumentSnapshot> data = snapshot.data!.docs;
-        final List<QueryDocumentSnapshot> filteredData = data.where((doc) {
-          final name = doc['name'].toString().toLowerCase();
-          final queryLower = query.toLowerCase();
-          return name.contains(queryLower);
-        }).toList();
-
-        return ListView.builder(
-          itemCount: filteredData.length,
-          itemBuilder: (context, index) {
-            var document = filteredData[index];
-            return ListTile(
-              title: Text(document['name'] ?? 'No Name'),
-              onTap: () {
-                close(context, document['name']);
+  void _showDetailsDialog(BuildContext context, QueryDocumentSnapshot document) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Details'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Name: ${document['name'] ?? 'Unknown'}'),
+              Text('Phone: ${document['phone'] ?? 'Unknown'}'),
+              Text('Team: ${document['team'] ?? 'Unknown'}'),
+              // Add more details here as needed
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
               },
-            );
-          },
+              child: Text('Close'),
+            ),
+          ],
         );
       },
     );
