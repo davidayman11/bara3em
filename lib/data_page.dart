@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters, prefer_const_constructors, prefer_interpolation_to_compose_strings
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -5,6 +7,7 @@ class DataPage extends StatefulWidget {
   const DataPage({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _DataPageState createState() => _DataPageState();
 }
 

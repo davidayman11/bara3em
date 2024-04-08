@@ -1,21 +1,22 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: use_super_parameters, prefer_const_constructors
 
 import 'dart:io';
-
 import 'package:bara3em/welcome_page.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:bara3em/login_page.dart'; // Import your LoginPage widget
+import 'package:firebase_core/firebase_core.dart';
+// Importing Firebase options
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isAndroid) {
     await Firebase.initializeApp(
-        options: FirebaseOptions(
-            apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
-            appId: "1:262757508649:android:9efce8f15c47409ad9de38",
-            messagingSenderId: "262757508649",
-            projectId: "bara3em-ee851"));
+      options: FirebaseOptions(
+        apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
+        appId: "1:262757508649:android:9efce8f15c47409ad9de38",
+        messagingSenderId: "262757508649",
+        projectId: "bara3em-ee851",
+      ),
+    );
     runApp(const MyApp());
   } else if (Platform.isIOS) {
     await Firebase.initializeApp();
@@ -24,7 +25,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +35,6 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: WelcomePage(),
-      routes: {
-        '/login': (context) => SimpleLoginScreen(), // Define the '/login' route here
-      },
       debugShowCheckedModeBanner: false,
     );
   }

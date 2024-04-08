@@ -1,3 +1,5 @@
+// ignore_for_file: file_names, library_private_types_in_public_api, prefer_final_fields, use_super_parameters
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 class EditSubscriptionPage extends StatefulWidget {
@@ -23,7 +25,7 @@ class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Subscription'),
+        title: const Text('Edit Subscription'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -32,20 +34,20 @@ class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
           children: [
             Text(
               'Name: ${widget.document['name']}',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             TextField(
               enabled: false, // Disable editing for the name
-              decoration: InputDecoration(labelText: 'Name'),
+              decoration: const InputDecoration(labelText: 'Name'),
               controller: TextEditingController(text: widget.document['name'] ?? ''), // Set name text but disable editing
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             TextField(
               controller: _subscriptionController,
-              decoration: InputDecoration(labelText: 'Subscription'),
+              decoration: const InputDecoration(labelText: 'Subscription'),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {
                 // Update the subscription data in Firestore
@@ -56,7 +58,7 @@ class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
                 // Navigate back to the previous screen
                 Navigator.pop(context);
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         ),

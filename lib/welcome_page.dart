@@ -1,6 +1,9 @@
+// ignore_for_file: prefer_const_constructors, use_key_in_widget_constructors, library_private_types_in_public_api
+
 import 'dart:async';
+import 'package:bara3em/homepage.dart';
+import 'package:bara3em/login_page.dart';
 import 'package:flutter/material.dart';
-import 'homepage.dart';
 class WelcomePage extends StatefulWidget {
   @override
   _WelcomePageState createState() => _WelcomePageState();
@@ -18,7 +21,7 @@ class _WelcomePageState extends State<WelcomePage> {
         _isVisible = false;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Bara3emHomePage()),
+          MaterialPageRoute(builder: (context) => SimpleLoginScreen()),
         );
       });
     });

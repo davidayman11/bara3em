@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, library_private_types_in_public_api, use_super_parameters, prefer_interpolation_to_compose_strings, prefer_final_fields
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

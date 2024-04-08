@@ -1,3 +1,5 @@
+// ignore_for_file: use_key_in_widget_constructors
+
 import 'package:flutter/material.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -5,9 +7,9 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
+        title: const Text('Settings'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('This is the Settings Page'),
       ),
     );

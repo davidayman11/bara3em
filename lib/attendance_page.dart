@@ -1,8 +1,10 @@
+// ignore_for_file: library_private_types_in_public_api, prefer_const_constructors, prefer_interpolation_to_compose_strings
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AttendancePage extends StatefulWidget {
-  const AttendancePage({Key? key}) : super(key: key);
+  const AttendancePage({super.key});
 
   @override
   _AttendancePageState createState() => _AttendancePageState();
@@ -29,7 +31,7 @@ class _AttendancePageState extends State<AttendancePage> {
   Stream<List<Map<String, dynamic>>> _fetchAttendance() {
     return _firestore.collection('Attendance_A').snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
+          .map((doc) => doc.data())
           .toList();
     });
   }
@@ -45,7 +47,7 @@ class _AttendancePageState extends State<AttendancePage> {
             .snapshots()
             .map((snapshot) {
           return snapshot.docs
-              .map((doc) => doc.data() as Map<String, dynamic>)
+              .map((doc) => doc.data())
               .toList();
         });
       }
