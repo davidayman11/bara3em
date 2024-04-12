@@ -1,7 +1,8 @@
-// ignore_for_file: prefer_const_constructors, library_private_types_in_public_api, use_super_parameters, prefer_interpolation_to_compose_strings, prefer_final_fields
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:excel/excel.dart';
+import 'package:path_provider/path_provider.dart';
 
 class EshtrakPage extends StatefulWidget {
   const EshtrakPage({Key? key}) : super(key: key);
@@ -43,6 +44,10 @@ class _EshtrakPageState extends State<EshtrakPage> {
               );
             },
           ),
+          IconButton(
+            icon: Icon(Icons.file_download),
+            onPressed: _downloadData,
+          ),
         ],
       ),
       body: Column(
@@ -56,15 +61,15 @@ class _EshtrakPageState extends State<EshtrakPage> {
               decoration: InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
-                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20), // Adjust padding
-                border: OutlineInputBorder( // Defines the border
-                  borderRadius: BorderRadius.circular(30.0), // Adjust the corner radius for rounder edges
+                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
-                enabledBorder: OutlineInputBorder( // Border style when TextField is enabled
+                enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(30.0),
                 ),
-                focusedBorder: OutlineInputBorder( // Border style when TextField is focused
+                focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
                   borderRadius: BorderRadius.circular(30.0),
                 ),
@@ -161,6 +166,61 @@ class _EshtrakPageState extends State<EshtrakPage> {
       },
     );
   }
+
+  Future<void> _downloadData() async {
+    try {
+      final data = await _firestore.collection('eshtrakat').get();
+      final excel = Excel.createExcel();
+      final sheet = excel['Sheet1'];
+
+      sheet.appendRow(['Name', 'Subscription']);
+
+      for (var doc in data.docs) {
+        sheet.appendRow([doc['name'] ?? '', doc['subscription'] ?? '']);
+      }
+
+      Directory directory;
+      if (Platform.isAndroid) {
+        directory = (await getExternalStorageDirectory())!;
+      } else if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
+      } else {
+        throw UnsupportedError('Unsupported platform');
+      }
+
+      final filePath = '${directory.path}/eshtrak_data.xlsx';
+      final file = File(filePath);
+
+      final excelData = excel.encode();
+      if (excelData != null) {
+        await file.writeAsBytes(excelData);
+        print('File saved at: $filePath');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Data downloaded successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        print('Failed to encode Excel data');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download data. Please try again later.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error downloading data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred while downloading data. Please try again later.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 }
 
 class CustomSearchDelegate extends SearchDelegate<String> {
@@ -248,12 +308,12 @@ class EditSubscriptionPage extends StatefulWidget {
 }
 
 class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
-  TextEditingController _subscriptionController = TextEditingController();
+  late TextEditingController _subscriptionController;
 
   @override
   void initState() {
     super.initState();
-    _subscriptionController.text = widget.document['subscription'] ?? '';
+    _subscriptionController = TextEditingController(text: widget.document['subscription'] ?? '');
   }
 
   @override
@@ -287,4 +347,10 @@ class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
       ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: EshtrakPage(),
+  ));
 }

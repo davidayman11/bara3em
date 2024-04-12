@@ -1,10 +1,8 @@
-// ignore_for_file: library_private_types_in_public_api, prefer_const_constructors, prefer_interpolation_to_compose_strings
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AttendancePage extends StatefulWidget {
-  const AttendancePage({super.key});
+  const AttendancePage({Key? key}) : super(key: key);
 
   @override
   _AttendancePageState createState() => _AttendancePageState();
@@ -29,31 +27,27 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 
   Stream<List<Map<String, dynamic>>> _fetchAttendance() {
-    return _firestore.collection('Attendance_A').snapshots().map((snapshot) {
-      return snapshot.docs
-          .map((doc) => doc.data())
-          .toList();
+    return _firestore.collection('Attendance').snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => doc.data()).toList();
     });
   }
+
   void _search(String query) {
     setState(() {
       if (query.isEmpty) {
         _attendanceStream = _fetchAttendance();
       } else {
         _attendanceStream = _firestore
-            .collection('Attendance_A')
+            .collection('Attendance')
             .where('name', isGreaterThanOrEqualTo: query)
             .where('name', isLessThanOrEqualTo: query + '\uf8ff')
             .snapshots()
             .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => doc.data())
-              .toList();
+          return snapshot.docs.map((doc) => doc.data()).toList();
         });
       }
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +56,7 @@ class _AttendancePageState extends State<AttendancePage> {
         title: Text('Attendance'),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -71,15 +66,15 @@ class _AttendancePageState extends State<AttendancePage> {
               decoration: InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
-                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20), // Adjust padding
-                border: OutlineInputBorder( // Defines the border
-                  borderRadius: BorderRadius.circular(30.0), // Adjust the corner radius for rounder edges
+                contentPadding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
-                enabledBorder: OutlineInputBorder( // Border style when TextField is enabled
+                enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(30.0),
                 ),
-                focusedBorder: OutlineInputBorder( // Border style when TextField is focused
+                focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
                   borderRadius: BorderRadius.circular(30.0),
                 ),
@@ -105,35 +100,16 @@ class _AttendancePageState extends State<AttendancePage> {
                   itemBuilder: (context, index) {
                     final record = attendanceRecords[index];
                     final name = record['name'] ?? 'No name provided';
-                    return ListTile(
-                      title: Text(name),
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Details for $name'),
-                              content: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Name: $name'),
-                                    // Add more fields here if needed
-                                  ],
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Close'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
+                    return Card(
+                      margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      elevation: 4.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: ListTile(
+                        title: Text(name),
+                        onTap: () => _showDetailsDialog(context, name),
+                      ),
                     );
                   },
                 );
@@ -142,6 +118,34 @@ class _AttendancePageState extends State<AttendancePage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showDetailsDialog(BuildContext context, String name) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Details for $name'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Name: $name'),
+                // Add more fields here if needed
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

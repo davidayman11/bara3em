@@ -1,7 +1,8 @@
-// ignore_for_file: prefer_const_constructors, prefer_interpolation_to_compose_strings, use_key_in_widget_constructors, library_private_types_in_public_api
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:excel/excel.dart';
+import 'package:path_provider/path_provider.dart';
 
 class Mo3skrPage extends StatefulWidget {
   @override
@@ -32,6 +33,21 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Mo3skr'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: CustomSearchDelegate(mo3skrStream: _mo3skrStream),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.file_download),
+            onPressed: _downloadData,
+          ),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -266,4 +282,140 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
       }
     });
   }
+
+  Future<void> _downloadData() async {
+    try {
+      final data = await _firestore.collection('mo3skr').get();
+      final excel = Excel.createExcel();
+      final sheet = excel['Sheet1'];
+
+      sheet.appendRow(['Name', 'Taly3a', 'Paid']);
+
+      for (var doc in data.docs) {
+        sheet.appendRow([doc['name'] ?? '', doc['taly3a'] ?? '', doc['paid'] ?? '']);
+      }
+
+      Directory directory;
+      if (Platform.isAndroid) {
+        directory = (await getExternalStorageDirectory())!;
+      } else if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
+      } else {
+        throw UnsupportedError('Unsupported platform');
+      }
+
+      final filePath = '${directory.path}/mo3skr_data.xlsx';
+      final file = File(filePath);
+
+      final excelData = excel.encode();
+      if (excelData != null) {
+        await file.writeAsBytes(excelData);
+        print('File saved at: $filePath');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Data downloaded successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        print('Failed to encode Excel data');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download data. Please try again later.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error downloading data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred while downloading data. Please try again later.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+}
+
+class CustomSearchDelegate extends SearchDelegate<String> {
+  final Stream<QuerySnapshot> mo3skrStream;
+
+  CustomSearchDelegate({required this.mo3skrStream});
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, '');
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return _buildSearchResults(context);
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return _buildSearchResults(context);
+  }
+
+  Widget _buildSearchResults(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: mo3skrStream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(child: Text('No data available'));
+        }
+
+        final List<QueryDocumentSnapshot> data = snapshot.data!.docs;
+        final List<QueryDocumentSnapshot> filteredData = data.where((doc) {
+          final name = doc['name'].toString().toLowerCase();
+          final queryLower = query.toLowerCase();
+          return name.contains(queryLower);
+        }).toList();
+
+        return ListView.builder(
+          itemCount: filteredData.length,
+          itemBuilder: (context, index) {
+            var document = filteredData[index];
+            return ListTile(
+              title: Text(document['name'] ?? 'No Name'),
+              onTap: () {
+                close(context, document['name']);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: Mo3skrPage(),
+  ));
 }
