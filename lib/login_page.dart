@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, library_private_types_in_public_api, use_super_parameters, unnecessary_const, avoid_print, use_build_context_synchronously, deprecated_member_use
+
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isAndroid) {
     await Firebase.initializeApp(
-      options: FirebaseOptions(
+      options: const FirebaseOptions(
         apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
         appId: "1:262757508649:android:9efce8f15c47409ad9de38",
         messagingSenderId: "262757508649",
@@ -27,8 +29,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: SimpleLoginScreen(),
+    return const MaterialApp(
+      home: const SimpleLoginScreen(),
     );
   }
 }
@@ -86,14 +88,14 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Error"),
+          title: const Text("Error"),
           content: Text(message),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("OK"),
+              child: const Text("OK"),
             ),
           ],
         );
@@ -135,7 +137,7 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: const Text('Login'),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -195,7 +197,7 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
             ),
             ElevatedButton(
               onPressed: submit,
-              child: Text('Log In'),
+              child: const Text('Log In'),
             ),
             SizedBox(
               height: screenHeight * .08,
@@ -204,7 +206,7 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => SimpleRegisterScreen(),
+                  builder: (_) => const SimpleRegisterScreen(),
                 ),
               ),
               child: RichText(
@@ -312,7 +314,7 @@ class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Register'),
+        title: const Text('Register'),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -404,7 +406,7 @@ class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
             ),
             ElevatedButton(
               onPressed: submit,
-              child: Text('Sign Up'),
+              child: const Text('Sign Up'),
             ),
             SizedBox(
               height: screenHeight * .06,

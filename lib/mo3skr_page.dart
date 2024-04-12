@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, avoid_print, use_build_context_synchronously, prefer_interpolation_to_compose_strings, use_key_in_widget_constructors, library_private_types_in_public_api
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,15 +36,6 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
       appBar: AppBar(
         title: Text('Mo3skr'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: CustomSearchDelegate(mo3skrStream: _mo3skrStream),
-              );
-            },
-          ),
           IconButton(
             icon: Icon(Icons.file_download),
             onPressed: _downloadData,

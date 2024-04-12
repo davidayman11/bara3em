@@ -41,7 +41,8 @@ dependencies:
   path_provider: ^2.0.3
   excel: ^2.0.0-nullsafety.2
   open_file: ^3.2.1
-
+  provider: ^5.0.0
+  shared_preferences: ^2.0.8
 
 
 

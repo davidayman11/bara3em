@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, use_super_parameters, library_private_types_in_public_api, avoid_print, prefer_interpolation_to_compose_strings
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -33,19 +35,11 @@ class _EshtrakPageState extends State<EshtrakPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Eshtrakat'),
+        title: const Text('Eshtrakat'),
         actions: [
+
           IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: CustomSearchDelegate(eshtrakStream: _eshtrakStream),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.file_download),
+            icon: const Icon(Icons.file_download),
             onPressed: _downloadData,
           ),
         ],
@@ -60,8 +54,8 @@ class _EshtrakPageState extends State<EshtrakPage> {
               onChanged: _search,
               decoration: InputDecoration(
                 labelText: 'Search',
-                prefixIcon: Icon(Icons.search),
-                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                prefixIcon: const Icon(Icons.search),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
                 ),
@@ -81,20 +75,20 @@ class _EshtrakPageState extends State<EshtrakPage> {
               stream: _eshtrakStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No data found'));
+                  return const Center(child: Text('No data found'));
                 }
                 return ListView.builder(
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {
                     var document = snapshot.data!.docs[index];
                     return Card(
-                      margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                       elevation: 4.0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
@@ -134,7 +128,7 @@ class _EshtrakPageState extends State<EshtrakPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Subscription Details'),
+          title: const Text('Subscription Details'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -148,7 +142,7 @@ class _EshtrakPageState extends State<EshtrakPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Close'),
+              child: const Text('Close'),
             ),
             TextButton(
               onPressed: () {
@@ -159,7 +153,7 @@ class _EshtrakPageState extends State<EshtrakPage> {
                   ),
                 );
               },
-              child: Text('Edit'),
+              child: const Text('Edit'),
             ),
           ],
         );
@@ -197,7 +191,7 @@ class _EshtrakPageState extends State<EshtrakPage> {
         print('File saved at: $filePath');
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Data downloaded successfully'),
             duration: Duration(seconds: 2),
           ),
@@ -205,7 +199,7 @@ class _EshtrakPageState extends State<EshtrakPage> {
       } else {
         print('Failed to encode Excel data');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Failed to download data. Please try again later.'),
             duration: Duration(seconds: 2),
           ),
@@ -214,7 +208,7 @@ class _EshtrakPageState extends State<EshtrakPage> {
     } catch (e) {
       print('Error downloading data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('An error occurred while downloading data. Please try again later.'),
           duration: Duration(seconds: 2),
         ),
@@ -232,7 +226,7 @@ class CustomSearchDelegate extends SearchDelegate<String> {
   List<Widget> buildActions(BuildContext context) {
     return [
       IconButton(
-        icon: Icon(Icons.clear),
+        icon: const Icon(Icons.clear),
         onPressed: () {
           query = '';
         },
@@ -243,7 +237,7 @@ class CustomSearchDelegate extends SearchDelegate<String> {
   @override
   Widget buildLeading(BuildContext context) {
     return IconButton(
-      icon: Icon(Icons.arrow_back),
+      icon: const Icon(Icons.arrow_back),
       onPressed: () {
         close(context, '');
       },
@@ -265,13 +259,13 @@ class CustomSearchDelegate extends SearchDelegate<String> {
       stream: eshtrakStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text('No data available'));
+          return const Center(child: Text('No data available'));
         }
 
         final List<QueryDocumentSnapshot> data = snapshot.data!.docs;
@@ -320,7 +314,7 @@ class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Subscription'),
+        title: const Text('Edit Subscription'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -329,9 +323,9 @@ class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
           children: [
             TextField(
               controller: _subscriptionController,
-              decoration: InputDecoration(labelText: 'Subscription'),
+              decoration: const InputDecoration(labelText: 'Subscription'),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {
                 FirebaseFirestore.instance
@@ -340,7 +334,7 @@ class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
                     .update({'subscription': _subscriptionController.text});
                 Navigator.pop(context);
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         ),
@@ -350,7 +344,7 @@ class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
 }
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     home: EshtrakPage(),
   ));
 }

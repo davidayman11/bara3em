@@ -15,13 +15,12 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   void initState() {
     super.initState();
-    // Start a timer to hide the photo after 2 seconds
-    Timer(Duration(seconds:2), () {
+    Timer(Duration(seconds:1), () {
       setState(() {
         _isVisible = false;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => SimpleLoginScreen()),
+          MaterialPageRoute(builder: (context) => Bara3emHomePage()),
         );
       });
     });
@@ -32,7 +31,6 @@ class _WelcomePageState extends State<WelcomePage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Photo with fade animation
           AnimatedOpacity(
             opacity: _isVisible ? 1.0 : 0.0,
             duration: Duration(seconds: 1),
