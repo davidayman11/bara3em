@@ -1,16 +1,28 @@
-// ignore_for_file: use_key_in_widget_constructors
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'theme_provider.dart';
 
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text('Settings'),
       ),
-      body: const Center(
-        child: Text('This is the Settings Page'),
+      body: ListView(
+        children: [
+          ListTile(
+            title: Text('Dark Mode'),
+            trailing: Switch(
+              value: themeProvider.themeMode == ThemeMode.dark,
+              onChanged: (value) {
+                themeProvider.themeMode = value ? ThemeMode.dark : ThemeMode.light;
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -115,15 +115,6 @@ class _AttendancePageState extends State<AttendancePage> {
         title: const Text('Attendance'),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: CustomSearchDelegate(attendanceStream: _attendanceStream),
-              );
-            },
-          ),
-          IconButton(
             icon: Icon(Icons.file_download),
             onPressed: _downloadData,
           ),

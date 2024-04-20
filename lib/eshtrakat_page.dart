@@ -17,6 +17,7 @@ class _EshtrakPageState extends State<EshtrakPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late Stream<QuerySnapshot> _eshtrakStream;
   late TextEditingController _searchController;
+  bool _searchEnabled = true;
 
   @override
   void initState() {
@@ -37,7 +38,6 @@ class _EshtrakPageState extends State<EshtrakPage> {
       appBar: AppBar(
         title: const Text('Eshtrakat'),
         actions: [
-
           IconButton(
             icon: const Icon(Icons.file_download),
             onPressed: _downloadData,
@@ -49,25 +49,38 @@ class _EshtrakPageState extends State<EshtrakPage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _search,
-              decoration: InputDecoration(
-                labelText: 'Search',
-                prefixIcon: const Icon(Icons.search),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: _search,
+                    enabled: _searchEnabled,
+                    decoration: InputDecoration(
+                      labelText: 'Search',
+                      prefixIcon: const Icon(Icons.search),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 0, horizontal: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Theme.of(context).primaryColor),
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                  ),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(30.0),
+                IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: _clearSearch,
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-              ),
+              ],
             ),
           ),
           Expanded(
@@ -88,14 +101,16 @@ class _EshtrakPageState extends State<EshtrakPage> {
                   itemBuilder: (context, index) {
                     var document = snapshot.data!.docs[index];
                     return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
                       elevation: 4.0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       child: ListTile(
                         title: Text(document['name'] ?? 'No Name'),
-                        subtitle: Text('Subscription: ${document['subscription'] ?? 'Unknown'}'),
+                        subtitle: Text(
+                            'Subscription: ${document['subscription'] ?? 'Unknown'}'),
                         onTap: () => _showDetailsDialog(context, document),
                       ),
                     );
@@ -123,7 +138,22 @@ class _EshtrakPageState extends State<EshtrakPage> {
     });
   }
 
-  void _showDetailsDialog(BuildContext context, QueryDocumentSnapshot document) {
+  void _disableSearch(BuildContext context) {
+    setState(() {
+      _searchController.clear();
+      _eshtrakStream = _firestore.collection('eshtrakat').snapshots();
+      _searchEnabled = false;
+    });
+  }
+
+  void _clearSearch() {
+    setState(() {
+      _searchController.clear();
+    });
+  }
+
+  void _showDetailsDialog(
+      BuildContext context, QueryDocumentSnapshot document) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -149,7 +179,8 @@ class _EshtrakPageState extends State<EshtrakPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditSubscriptionPage(document: document),
+                    builder: (context) =>
+                        EditSubscriptionPage(document: document),
                   ),
                 );
               },
@@ -209,7 +240,8 @@ class _EshtrakPageState extends State<EshtrakPage> {
       print('Error downloading data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('An error occurred while downloading data. Please try again later.'),
+          content: Text(
+              'An error occurred while downloading data. Please try again later.'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -295,7 +327,8 @@ class CustomSearchDelegate extends SearchDelegate<String> {
 class EditSubscriptionPage extends StatefulWidget {
   final QueryDocumentSnapshot document;
 
-  const EditSubscriptionPage({Key? key, required this.document}) : super(key: key);
+  const EditSubscriptionPage({Key? key, required this.document})
+      : super(key: key);
 
   @override
   _EditSubscriptionPageState createState() => _EditSubscriptionPageState();
@@ -307,7 +340,8 @@ class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
   @override
   void initState() {
     super.initState();
-    _subscriptionController = TextEditingController(text: widget.document['subscription'] ?? '');
+    _subscriptionController =
+        TextEditingController(text: widget.document['subscription'] ?? '');
   }
 
   @override

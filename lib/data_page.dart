@@ -1,13 +1,11 @@
-// ignore_for_file: use_super_parameters, prefer_const_constructors, prefer_interpolation_to_compose_strings
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
 class DataPage extends StatefulWidget {
   const DataPage({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _DataPageState createState() => _DataPageState();
 }
 
@@ -18,7 +16,7 @@ class _DataPageState extends State<DataPage> {
   @override
   void initState() {
     super.initState();
-    _dataStream = FirebaseFirestore.instance.collection('bara3em_database').snapshots();
+    _dataStream = FirebaseFirestore.instance.collection('Database').snapshots();
     _searchController = TextEditingController();
   }
 
@@ -45,15 +43,15 @@ class _DataPageState extends State<DataPage> {
               decoration: InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
-                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20), // Adjust padding
-                border: OutlineInputBorder( // Defines the border
-                  borderRadius: BorderRadius.circular(30.0), // Adjust the corner radius for rounder edges
+                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
-                enabledBorder: OutlineInputBorder( // Border style when TextField is enabled
+                enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(30.0),
                 ),
-                focusedBorder: OutlineInputBorder( // Border style when TextField is focused
+                focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
                   borderRadius: BorderRadius.circular(30.0),
                 ),
@@ -85,7 +83,25 @@ class _DataPageState extends State<DataPage> {
                     var document = snapshot.data!.docs[index];
                     return GestureDetector(
                       onTap: () {
-                        _showDetailsDialog(context, document);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DetailsPage(
+                              name: document['name'].toString() ?? 'No Name',
+                              image: 'img/5.jpg', // Replace with actual image URL or path
+                              currentGrade: document['Current grade'].toString() ?? 'Unknown',
+                              fatherName: document['Father’s name'].toString() ?? 'Unknown',
+                              fatherPhone: document['Father’s phone'].toString() ?? 'Unknown',
+                              motherName: document['Mother’s name'].toString() ?? 'Unknown',
+                              motherPhone: document['Mother’s phone'].toString() ?? 'Unknown',
+                              nationalId: document['National id'].toString() ?? 'Unknown',
+                              childPhone: document['child phone'].toString() ?? 'Unknown',
+                              nextGrade: document['next grade'].toString() ?? 'Unknown',
+                              school: document['school'].toString() ?? 'Unknown',
+                              tale3A: document['tale3A'].toString() ?? 'Unknown',
+                            ),
+                          ),
+                        );
                       },
                       child: Card(
                         elevation: 4.0,
@@ -130,42 +146,147 @@ class _DataPageState extends State<DataPage> {
   void _search(String query) {
     setState(() {
       if (query.isEmpty) {
-        _dataStream = FirebaseFirestore.instance.collection('bara3em_database').snapshots();
+        _dataStream = FirebaseFirestore.instance.collection('Database').snapshots();
       } else {
         _dataStream = FirebaseFirestore.instance
-            .collection('bara3em_database')
+            .collection('Database')
             .where('name', isGreaterThanOrEqualTo: query, isLessThanOrEqualTo: query + '\uf8ff')
             .snapshots();
       }
     });
   }
+}
 
-  void _showDetailsDialog(BuildContext context, QueryDocumentSnapshot document) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Details'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Name: ${document['name'] ?? 'Unknown'}'),
-              Text('Phone: ${document['phone'] ?? 'Unknown'}'),
-              Text('Team: ${document['team'] ?? 'Unknown'}'),
-              // Add more details here as needed
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Close'),
+class DetailsPage extends StatelessWidget {
+  final String name;
+  final String image;
+  final String currentGrade;
+  final String fatherName;
+  final String fatherPhone;
+  final String motherName;
+  final String motherPhone;
+  final String nationalId;
+  final String childPhone;
+  final String nextGrade;
+  final String school;
+  final String tale3A;
+
+  const DetailsPage({
+    required this.name,
+    required this.image,
+    required this.currentGrade,
+    required this.fatherName,
+    required this.fatherPhone,
+    required this.motherName,
+    required this.motherPhone,
+    required this.nationalId,
+    required this.childPhone,
+    required this.nextGrade,
+    required this.school,
+    required this.tale3A,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Details'),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 6 / 6,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10.0),
+                child: Image.asset(
+                  image,
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
+            SizedBox(height: 16.0),
+            DetailItem(label: 'Name', value: name),
+            DetailItem(label: 'Current Grade', value: currentGrade),
+            DetailItem(label: 'Father\'s Name', value: fatherName),
+            _buildPhoneCallItem(context, 'Father\'s Phone', fatherPhone),
+            DetailItem(label: 'Mother\'s Name', value: motherName),
+            _buildPhoneCallItem(context, 'Mother\'s Phone', motherPhone),
+            DetailItem(label: 'National ID', value: nationalId),
+            _buildPhoneCallItem(context, 'Child Phone', childPhone),
+            DetailItem(label: 'Next Grade', value: nextGrade),
+            DetailItem(label: 'School', value: school),
+            DetailItem(label: 'Tale3A', value: tale3A),
           ],
-        );
-      },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhoneCallItem(BuildContext context, String label, String phoneNumber) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.0,
+          ),
+        ),
+        SizedBox(height: 5.0),
+        GestureDetector(
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: phoneNumber));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Copied $phoneNumber')),
+            );
+          },
+          child: Text(
+            phoneNumber,
+            style: TextStyle(
+              fontSize: 16.0,
+              color: Colors.blue,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+        SizedBox(height: 16.0),
+      ],
+    );
+  }
+}
+
+class DetailItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const DetailItem({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.0,
+          ),
+        ),
+        SizedBox(height: 5.0),
+        Text(
+          value,
+          style: TextStyle(fontSize: 16.0),
+        ),
+        SizedBox(height: 16.0),
+      ],
     );
   }
 }

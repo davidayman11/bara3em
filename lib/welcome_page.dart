@@ -1,9 +1,8 @@
-// ignore_for_file: prefer_const_constructors, use_key_in_widget_constructors, library_private_types_in_public_api
-
 import 'dart:async';
-import 'package:bara3em/homepage.dart';
-import 'package:bara3em/login_page.dart';
 import 'package:flutter/material.dart';
+import 'homepage.dart';
+import 'login_page.dart';
+
 class WelcomePage extends StatefulWidget {
   @override
   _WelcomePageState createState() => _WelcomePageState();
@@ -15,7 +14,7 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds:1), () {
+    Timer(Duration(seconds: 1), () {
       setState(() {
         _isVisible = false;
         Navigator.pushReplacement(
@@ -45,7 +44,16 @@ class _WelcomePageState extends State<WelcomePage> {
               ),
             ),
           ),
-          // You can add other widgets on top of the photo if needed
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 190,
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+              ),
+            ),
+          ),
         ],
       ),
     );

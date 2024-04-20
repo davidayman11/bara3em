@@ -1,6 +1,5 @@
-// ignore_for_file: unused_local_variable, library_private_types_in_public_api, use_super_parameters, unnecessary_const, avoid_print, use_build_context_synchronously, deprecated_member_use
-
 import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,52 +9,36 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isAndroid) {
     await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
-        appId: "1:262757508649:android:9efce8f15c47409ad9de38",
-        messagingSenderId: "262757508649",
-        projectId: "bara3em-ee851",
-      ),
-    );
-    runApp(const MyApp());
+        options: FirebaseOptions(
+            apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
+            appId: "1:262757508649:android:9efce8f15c47409ad9de38",
+            messagingSenderId: "262757508649",
+            projectId: "bara3em-ee851"));
   } else if (Platform.isIOS) {
     await Firebase.initializeApp();
-    runApp(const MyApp());
   }
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: const SimpleLoginScreen(),
+    return MaterialApp(
+      home: SimpleLoginScreen(),
     );
   }
 }
 
 class SimpleLoginScreen extends StatefulWidget {
-  const SimpleLoginScreen({Key? key}) : super(key: key);
-
   @override
   _SimpleLoginScreenState createState() => _SimpleLoginScreenState();
 }
 
 class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
-  late String email;
-  late String password;
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   String? emailError;
   String? passwordError;
-
-  @override
-  void initState() {
-    super.initState();
-    email = '';
-    password = '';
-    emailError = null;
-    passwordError = null;
-  }
 
   bool validate() {
     setState(() {
@@ -64,16 +47,17 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
     });
 
     final emailExp = RegExp(
-        r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$");
+      r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$",
+    );
 
-    if (email.isEmpty || !emailExp.hasMatch(email)) {
+    if (emailController.text.isEmpty || !emailExp.hasMatch(emailController.text)) {
       setState(() {
         emailError = 'Email is invalid';
       });
       return false;
     }
 
-    if (password.isEmpty) {
+    if (passwordController.text.isEmpty) {
       setState(() {
         passwordError = 'Please enter a password';
       });
@@ -83,31 +67,12 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
     return true;
   }
 
-  void showErrorMessage(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Error"),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-  }
   void submit() async {
     if (validate()) {
       try {
         final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email,
-          password: password,
+          email: emailController.text,
+          password: passwordController.text,
         );
         // Navigate to Bara3emHomePage after successful login
         Navigator.pushReplacement(
@@ -131,41 +96,57 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
     }
   }
 
+  void showErrorMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: Text('Login'),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: ListView(
           children: [
-            SizedBox(height: screenHeight * .06),
-            const Text(
+            SizedBox(height: screenHeight * 0.06),
+            Text(
               'Welcome,',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: screenHeight * .01),
+            SizedBox(height: screenHeight * 0.01),
             Text(
               'Sign in to continue!',
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.black.withOpacity(.6),
+                color: Colors.blueAccent.withOpacity(1),
               ),
             ),
-            SizedBox(height: screenHeight * .06),
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  email = value;
-                });
-              },
+            SizedBox(height: screenHeight * 0.06),
+            TextFormField(
+              controller: emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
                 errorText: emailError,
@@ -175,13 +156,9 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                 ),
               ),
             ),
-            SizedBox(height: screenHeight * .02),
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  password = value;
-                });
-              },
+            SizedBox(height: screenHeight * 0.02),
+            TextFormField(
+              controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Password',
@@ -192,27 +169,23 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                 ),
               ),
             ),
-            SizedBox(
-              height: screenHeight * .05,
-            ),
+            SizedBox(height: screenHeight * 0.05),
             ElevatedButton(
               onPressed: submit,
-              child: const Text('Log In'),
+              child: Text('Log In'),
             ),
-            SizedBox(
-              height: screenHeight * .08,
-            ),
+            SizedBox(height: screenHeight * 0.08),
             TextButton(
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const SimpleRegisterScreen(),
+                  builder: (_) => SimpleRegisterScreen(),
                 ),
               ),
               child: RichText(
-                text: const TextSpan(
+                text: TextSpan(
                   text: "I'm a new user, ",
-                  style: TextStyle(color: Colors.black),
+                  style: TextStyle(color: Colors.blueAccent.withOpacity(1)),
                   children: [
                     TextSpan(
                       text: 'Sign Up',
@@ -233,30 +206,18 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
 }
 
 class SimpleRegisterScreen extends StatefulWidget {
-  const SimpleRegisterScreen({Key? key}) : super(key: key);
-
   @override
   _SimpleRegisterScreenState createState() => _SimpleRegisterScreenState();
 }
 
 class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
-  late String email;
-  late String password;
-  late String confirmPassword;
-  late String name;
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+
   String? emailError;
   String? passwordError;
-
-  @override
-  void initState() {
-    super.initState();
-    email = '';
-    password = '';
-    confirmPassword = '';
-    name = '';
-    emailError = null;
-    passwordError = null;
-  }
 
   bool validate() {
     setState(() {
@@ -265,23 +226,24 @@ class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
     });
 
     final emailExp = RegExp(
-        r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$");
+      r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$",
+    );
 
-    if (email.isEmpty || !emailExp.hasMatch(email)) {
+    if (emailController.text.isEmpty || !emailExp.hasMatch(emailController.text)) {
       setState(() {
         emailError = 'Email is invalid';
       });
       return false;
     }
 
-    if (password.isEmpty || confirmPassword.isEmpty) {
+    if (passwordController.text.isEmpty || confirmPasswordController.text.isEmpty) {
       setState(() {
         passwordError = 'Please enter a password';
       });
       return false;
     }
 
-    if (password != confirmPassword) {
+    if (passwordController.text != confirmPasswordController.text) {
       setState(() {
         passwordError = 'Passwords do not match';
       });
@@ -294,13 +256,17 @@ class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
   void submit() async {
     if (validate()) {
       try {
-        final userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: email, password: password);
+        final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: emailController.text,
+          password: passwordController.text,
+        );
         // Add user's name to their profile
-        await userCredential.user!.updateProfile(displayName: name);
+        await userCredential.user!.updateProfile(displayName: nameController.text);
         // Navigate to Bara3emHomePage after successful registration
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => Bara3emHomePage()));
+          context,
+          MaterialPageRoute(builder: (_) => Bara3emHomePage()),
+        );
       } on FirebaseAuthException catch (e) {
         // Handle errors
         print(e.message); // Consider using something like `setState` to show an error message
@@ -310,39 +276,35 @@ class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register'),
+        title: Text('Register'),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: ListView(
           children: [
-            SizedBox(height: screenHeight * .06),
-            const Text(
+            SizedBox(height: screenHeight * 0.06),
+            Text(
               'Create Account,',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: screenHeight * .01),
+            SizedBox(height: screenHeight * 0.01),
             Text(
               'Sign up to get started!',
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.black.withOpacity(.6),
+                color: Colors.black.withOpacity(0.6),
               ),
             ),
-            SizedBox(height: screenHeight * .06),
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  email = value;
-                });
-              },
+            SizedBox(height: screenHeight * 0.06),
+            TextFormField(
+              controller: emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
                 errorText: emailError,
@@ -352,13 +314,9 @@ class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
                 ),
               ),
             ),
-            SizedBox(height: screenHeight * .02),
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  password = value;
-                });
-              },
+            SizedBox(height: screenHeight * 0.02),
+            TextFormField(
+              controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Password',
@@ -369,13 +327,9 @@ class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
                 ),
               ),
             ),
-            SizedBox(height: screenHeight * .02),
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  confirmPassword = value;
-                });
-              },
+            SizedBox(height: screenHeight * 0.02),
+            TextFormField(
+              controller: confirmPasswordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Confirm Password',
@@ -386,13 +340,9 @@ class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
                 ),
               ),
             ),
-            SizedBox(height: screenHeight * .02),
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  name = value;
-                });
-              },
+            SizedBox(height: screenHeight * 0.02),
+            TextFormField(
+              controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Name',
                 floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -401,20 +351,16 @@ class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
                 ),
               ),
             ),
-            SizedBox(
-              height: screenHeight * .01,
-            ),
+            SizedBox(height: screenHeight * 0.01),
             ElevatedButton(
               onPressed: submit,
-              child: const Text('Sign Up'),
+              child: Text('Sign Up'),
             ),
-            SizedBox(
-              height: screenHeight * .06,
-            ),
+            SizedBox(height: screenHeight * 0.06),
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: RichText(
-                text: const TextSpan(
+                text: TextSpan(
                   text: "I'm already a member, ",
                   style: TextStyle(color: Colors.black),
                   children: [
