@@ -9,14 +9,17 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isAndroid) {
     await Firebase.initializeApp(
-        options: FirebaseOptions(
-            apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
-            appId: "1:262757508649:android:9efce8f15c47409ad9de38",
-            messagingSenderId: "262757508649",
-            projectId: "bara3em-ee851"));
+      options: FirebaseOptions(
+        apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
+        appId: "1:262757508649:android:9efce8f15c47409ad9de38",
+        messagingSenderId: "262757508649",
+        projectId: "bara3em-ee851",
+      ),
+    );
   } else if (Platform.isIOS) {
     await Firebase.initializeApp();
   }
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -42,162 +45,86 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
 
   bool validate() {
     setState(() {
-      emailError = null;
-      passwordError = null;
+      emailError = emailController.text.isEmpty || !RegExp(
+        r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+      ).hasMatch(emailController.text) ? 'Enter a valid email' : null;
+
+      passwordError = passwordController.text.isEmpty ? 'Password cannot be empty' : null;
     });
 
-    final emailExp = RegExp(
-      r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$",
-    );
-
-    if (emailController.text.isEmpty || !emailExp.hasMatch(emailController.text)) {
-      setState(() {
-        emailError = 'Email is invalid';
-      });
-      return false;
-    }
-
-    if (passwordController.text.isEmpty) {
-      setState(() {
-        passwordError = 'Please enter a password';
-      });
-      return false;
-    }
-
-    return true;
+    return emailError == null && passwordError == null;
   }
 
   void submit() async {
     if (validate()) {
       try {
-        final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailController.text,
           password: passwordController.text,
         );
-        // Navigate to Bara3emHomePage after successful login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => Bara3emHomePage()),
-        );
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => Bara3emHomePage()));
       } on FirebaseAuthException catch (e) {
-        print("Firebase Auth Exception: ${e.message}");
-        if (e.code == 'user-not-found' || e.code == 'wrong-password') {
-          // Show error message in a dialog
-          showErrorMessage('Invalid email or password');
-        } else {
-          // Handle other errors, maybe set some error message to show to the user
-          print("Other Firebase Auth Exception");
-          print(e.message); // Consider using something like `setState` to show an error message
-        }
-      } catch (e, stackTrace) {
-        print("General Exception: $e");
-        print(stackTrace);
+        final message = e.code == 'user-not-found' || e.code == 'wrong-password'
+            ? 'Invalid email or password'
+            : 'Login failed, please try again later';
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Login Error'),
+            content: Text(message),
+            actions: [
+              TextButton(
+                child: Text('OK'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+        );
       }
     }
   }
 
-  void showErrorMessage(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Error"),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Login'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ListView(
+      appBar: AppBar(title: Text('Login')),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: screenHeight * 0.06),
-            Text(
-              'Welcome,',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.01),
-            Text(
-              'Sign in to continue!',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.blueAccent.withOpacity(1),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.06),
-            TextFormField(
+            SizedBox(height: 40),
+            Text('Welcome,', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text('Sign in to continue!', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+            SizedBox(height: 20),
+            TextField(
               controller: emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
                 errorText: emailError,
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            SizedBox(height: screenHeight * 0.02),
-            TextFormField(
+            SizedBox(height: 20),
+            TextField(
               controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Password',
                 errorText: passwordError,
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            SizedBox(height: screenHeight * 0.05),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: submit,
               child: Text('Log In'),
+              style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
             ),
-            SizedBox(height: screenHeight * 0.08),
             TextButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => SimpleRegisterScreen(),
-                ),
-              ),
-              child: RichText(
-                text: TextSpan(
-                  text: "I'm a new user, ",
-                  style: TextStyle(color: Colors.blueAccent.withOpacity(1)),
-                  children: [
-                    TextSpan(
-                      text: 'Sign Up',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => SimpleRegisterScreen())),
+              child: Text('Create a new account'),
+            ),
           ],
         ),
       ),
@@ -221,160 +148,106 @@ class _SimpleRegisterScreenState extends State<SimpleRegisterScreen> {
 
   bool validate() {
     setState(() {
-      emailError = null;
-      passwordError = null;
+      emailError = emailController.text.isEmpty || !RegExp(
+        r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+      ).hasMatch(emailController.text) ? 'Enter a valid email' : null;
+
+      passwordError = passwordController.text.isEmpty ? 'Password cannot be empty' :
+      passwordController.text.length < 6 ? 'Password must be at least 6 characters long' : null;
     });
 
-    final emailExp = RegExp(
-      r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$",
-    );
-
-    if (emailController.text.isEmpty || !emailExp.hasMatch(emailController.text)) {
-      setState(() {
-        emailError = 'Email is invalid';
-      });
-      return false;
-    }
-
-    if (passwordController.text.isEmpty || confirmPasswordController.text.isEmpty) {
-      setState(() {
-        passwordError = 'Please enter a password';
-      });
-      return false;
-    }
-
-    if (passwordController.text != confirmPasswordController.text) {
-      setState(() {
-        passwordError = 'Passwords do not match';
-      });
-      return false;
-    }
-
-    return true;
+    return emailError == null && passwordError == null;
   }
 
   void submit() async {
     if (validate()) {
       try {
-        final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: emailController.text,
           password: passwordController.text,
         );
-        // Add user's name to their profile
-        await userCredential.user!.updateProfile(displayName: nameController.text);
-        // Navigate to Bara3emHomePage after successful registration
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => Bara3emHomePage()),
-        );
+        await userCredential.user!.updateDisplayName(nameController.text);
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => Bara3emHomePage()));
       } on FirebaseAuthException catch (e) {
-        // Handle errors
-        print(e.message); // Consider using something like `setState` to show an error message
+        final message = e.code == 'email-already-in-use'
+            ? 'The email address is already in use by another account.'
+            : 'Registration failed, please try again later';
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Registration Error'),
+            content: Text(message),
+            actions: [
+              TextButton(
+                child: Text('OK'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Register'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: ListView(
+      appBar: AppBar(title: Text('Register')),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: screenHeight * 0.06),
-            Text(
-              'Create Account,',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.01),
-            Text(
-              'Sign up to get started!',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.black.withOpacity(0.6),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.06),
-            TextFormField(
+            SizedBox(height: 40),
+            Text('Create Account,', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text('Sign up to get started!', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+            SizedBox(height: 20),
+            TextField(
               controller: emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
                 errorText: emailError,
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            SizedBox(height: screenHeight * 0.02),
-            TextFormField(
+            SizedBox(height: 20),
+            TextField(
               controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Password',
                 errorText: passwordError,
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            SizedBox(height: screenHeight * 0.02),
-            TextFormField(
+            SizedBox(height: 20),
+            TextField(
               controller: confirmPasswordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Confirm Password',
                 errorText: passwordError,
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            SizedBox(height: screenHeight * 0.02),
-            TextFormField(
+            SizedBox(height: 20),
+            TextField(
               controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Name',
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            SizedBox(height: screenHeight * 0.01),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: submit,
               child: Text('Sign Up'),
+              style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
             ),
-            SizedBox(height: screenHeight * 0.06),
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: RichText(
-                text: TextSpan(
-                  text: "I'm already a member, ",
-                  style: TextStyle(color: Colors.black),
-                  children: [
-                    TextSpan(
-                      text: 'Sign In',
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Already have an account? Sign in'),
+            ),
           ],
         ),
       ),

@@ -36,29 +36,34 @@ class _DataPageState extends State<DataPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
               onChanged: _search,
               decoration: InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
-                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    _search('');
+                  },
+                )
+                    : null,
+                filled: true,
+                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
           ),
-          Expanded(
+
+      Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _dataStream,
               builder: (context, snapshot) {
@@ -81,30 +86,11 @@ class _DataPageState extends State<DataPage> {
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {
                     var document = snapshot.data!.docs[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailsPage(
-                              name: document['name'].toString() ?? 'No Name',
-                              image: 'img/5.jpg', // Replace with actual image URL or path
-                              currentGrade: document['Current grade'].toString() ?? 'Unknown',
-                              fatherName: document['Father’s name'].toString() ?? 'Unknown',
-                              fatherPhone: document['Father’s phone'].toString() ?? 'Unknown',
-                              motherName: document['Mother’s name'].toString() ?? 'Unknown',
-                              motherPhone: document['Mother’s phone'].toString() ?? 'Unknown',
-                              nationalId: document['National id'].toString() ?? 'Unknown',
-                              childPhone: document['child phone'].toString() ?? 'Unknown',
-                              nextGrade: document['next grade'].toString() ?? 'Unknown',
-                              school: document['school'].toString() ?? 'Unknown',
-                              tale3A: document['tale3A'].toString() ?? 'Unknown',
-                            ),
-                          ),
-                        );
-                      },
+                    return InkWell(
+                      onTap: () => _navigateToDetailsPage(context, document),
+                      borderRadius: BorderRadius.circular(10),
                       child: Card(
-                        elevation: 4.0,
+                        elevation: 2.0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
@@ -139,6 +125,28 @@ class _DataPageState extends State<DataPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _navigateToDetailsPage(BuildContext context, DocumentSnapshot document) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailsPage(
+          name: document['name'].toString() ?? 'No Name',
+          image: 'img/5.jpg',
+          currentGrade: document['Current grade'].toString() ?? 'Unknown',
+          fatherName: document['Father’s name'].toString() ?? 'Unknown',
+          fatherPhone: document['Father’s phone'].toString() ?? 'Unknown',
+          motherName: document['Mother’s name'].toString() ?? 'Unknown',
+          motherPhone: document['Mother’s phone'].toString() ?? 'Unknown',
+          nationalId: document['National id'].toString() ?? 'Unknown',
+          childPhone: document['child phone'].toString() ?? 'Unknown',
+          nextGrade: document['next grade'].toString() ?? 'Unknown',
+          school: document['school'].toString() ?? 'Unknown',
+          tale3A: document['tale3A'].toString() ?? 'Unknown',
+        ),
       ),
     );
   }
@@ -226,35 +234,37 @@ class DetailsPage extends StatelessWidget {
   }
 
   Widget _buildPhoneCallItem(BuildContext context, String label, String phoneNumber) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18.0,
-          ),
-        ),
-        SizedBox(height: 5.0),
-        GestureDetector(
-          onTap: () {
-            Clipboard.setData(ClipboardData(text: phoneNumber));
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Copied $phoneNumber')),
-            );
-          },
-          child: Text(
-            phoneNumber,
-            style: TextStyle(
-              fontSize: 16.0,
-              color: Colors.blue,
-              decoration: TextDecoration.underline,
+    return InkWell(
+      onTap: () {
+        Clipboard.setData(ClipboardData(text: phoneNumber));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Copied $phoneNumber')),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16.0,
+                color: Theme.of(context).textTheme.bodyText1!.color,
+              ),
             ),
-          ),
+            Text(
+              phoneNumber,
+              style: TextStyle(
+                fontSize: 14.0,
+                color: Theme.of(context).textTheme.bodyText1!.color,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 16.0),
-      ],
+      ),
     );
   }
 }
@@ -263,30 +273,39 @@ class DetailItem extends StatelessWidget {
   final String label;
   final String value;
 
-  const DetailItem({
-    required this.label,
-    required this.value,
-  });
+  const DetailItem({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18.0,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16.0,
+              color: Theme.of(context).textTheme.bodyText1!.color,
+            ),
           ),
-        ),
-        SizedBox(height: 5.0),
-        Text(
-          value,
-          style: TextStyle(fontSize: 16.0),
-        ),
-        SizedBox(height: 16.0),
-      ],
+          Text(
+            value,
+            style: TextStyle(fontSize: 14.0),
+          ),
+        ],
+      ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    title: 'Your App',
+    theme: ThemeData(
+      primarySwatch: Colors.blueGrey,
+    ),
+    home: DataPage(),
+  ));
 }

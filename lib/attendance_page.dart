@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,76 +13,73 @@ class AttendancePage extends StatefulWidget {
 }
 
 class _AttendancePageState extends State<AttendancePage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final TextEditingController _searchController = TextEditingController();
   late Stream<List<Map<String, dynamic>>> _attendanceStream;
-  late TextEditingController _searchController;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
     _attendanceStream = _fetchAttendance();
-    _searchController = TextEditingController();
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
   Stream<List<Map<String, dynamic>>> _fetchAttendance() {
-    return _firestore.collection('Attendance').snapshots().map((snapshot) {
+    return FirebaseFirestore.instance.collection('Attendance').snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _search(_searchController.text);
     });
   }
 
   void _search(String query) {
     setState(() {
-      if (query.isEmpty) {
-        _attendanceStream = _fetchAttendance();
-      } else {
-        _attendanceStream = _firestore
-            .collection('Attendance')
-            .where('name', isGreaterThanOrEqualTo: query)
-            .where('name', isLessThanOrEqualTo: '$query\uf8ff')
-            .snapshots()
-            .map((snapshot) {
-          return snapshot.docs.map((doc) => doc.data()).toList();
-        });
-      }
+      _attendanceStream = FirebaseFirestore.instance
+          .collection('Attendance')
+          .where('name', isGreaterThanOrEqualTo: query)
+          .where('name', isLessThanOrEqualTo: '$query\uf8ff')
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs.map((doc) => doc.data()).toList();
+      });
     });
   }
 
   Future<void> _downloadData() async {
     try {
-      final data = await _firestore.collection('Attendance').get();
+      final data = await FirebaseFirestore.instance.collection('Attendance').get();
       final excel = Excel.createExcel();
       final sheet = excel['Sheet1'];
 
-      sheet.appendRow(['Name', 'Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7', 'Day 8', 'Day 9']);
+      sheet.appendRow([
+        'Name',
+        for (int i = 1; i <= 9; i++) 'Day $i'
+      ]);
 
       for (var doc in data.docs) {
         final List<String?> days = List.generate(9, (index) => doc['day${index + 1}']?.toString());
         sheet.appendRow([doc['name'], ...days]);
       }
 
-      Directory directory;
-      if (Platform.isAndroid) {
-        directory = (await getExternalStorageDirectory())!;
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      } else {
-        throw UnsupportedError('Unsupported platform');
-      }
-
-      final filePath = '${directory.path}/attendance_data.xlsx';
+      Directory? directory = await getExternalStorageDirectory();
+      final filePath = '${directory!.path}/attendance_data.xlsx';
       final file = File(filePath);
 
       final excelData = excel.encode();
       if (excelData != null) {
         await file.writeAsBytes(excelData);
-        print('File saved at: $filePath');
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Data downloaded successfully'),
@@ -89,13 +87,7 @@ class _AttendancePageState extends State<AttendancePage> {
           ),
         );
       } else {
-        print('Failed to encode Excel data');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to download data. Please try again later.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        throw Exception('Failed to encode Excel data');
       }
     } catch (e) {
       print('Error downloading data: $e');
@@ -112,7 +104,7 @@ class _AttendancePageState extends State<AttendancePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Attendance'),
+        title: Text('Attendance Tracker'),
         actions: [
           IconButton(
             icon: Icon(Icons.file_download),
@@ -121,29 +113,30 @@ class _AttendancePageState extends State<AttendancePage> {
         ],
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
               onChanged: _search,
               decoration: InputDecoration(
                 labelText: 'Search',
-                prefixIcon: const Icon(Icons.search),
-                contentPadding:
-                const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+                prefixIcon: Icon(Icons.search),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    _search('');
+                  },
+                )
+                    : null,
+                filled: true,
+                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide:
-                  BorderSide(color: Theme.of(context).primaryColor),
-                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
@@ -153,31 +146,21 @@ class _AttendancePageState extends State<AttendancePage> {
               stream: _attendanceStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No data found'));
+                  return Center(child: Text('No data found'));
                 }
-                final attendanceRecords = snapshot.data!;
                 return ListView.builder(
-                  itemCount: attendanceRecords.length,
+                  itemCount: snapshot.data!.length,
                   itemBuilder: (context, index) {
-                    final record = attendanceRecords[index];
-                    final name = record['name'] ?? 'No name provided';
+                    var record = snapshot.data![index];
                     return Card(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
-                      elevation: 4.0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
+                      margin: EdgeInsets.all(8.0),
                       child: ListTile(
-                        title: Text(name),
-                        onTap: () =>
-                            _showDetailsDialog(context, record),
+                        title: Text(record['name'] ?? 'Unknown'),
+                        subtitle: Text('Details here...'),
+                        onTap: () => _showDetailsDialog(context, record),
                       ),
                     );
                   },
@@ -190,8 +173,7 @@ class _AttendancePageState extends State<AttendancePage> {
     );
   }
 
-  void _showDetailsDialog(
-      BuildContext context, Map<String, dynamic> record) {
+  void _showDetailsDialog(BuildContext context, Map<String, dynamic> record) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -200,97 +182,18 @@ class _AttendancePageState extends State<AttendancePage> {
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Name: ${record['name']}'),
-                for (int i = 0; i < 9; i++)
-                  if (record['day${i + 1}'] != null)
-                    Text('Day ${i + 1}: ${record['day${i + 1}']}'),
-              ],
+              children: List.generate(
+                9,
+                    (i) => Text('Day ${i + 1}: ${record['day${i + 1}'] ?? 'Not available'}'),
+              ),
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Close'),
             ),
           ],
-        );
-      },
-    );
-  }
-}
-
-class CustomSearchDelegate extends SearchDelegate<String> {
-  final Stream<List<Map<String, dynamic>>> attendanceStream;
-
-  CustomSearchDelegate({required this.attendanceStream});
-
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, '');
-      },
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return _buildSearchResults(context);
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return _buildSearchResults(context);
-  }
-
-  Widget _buildSearchResults(BuildContext context) {
-    return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: attendanceStream,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No data available'));
-        }
-
-        final List<Map<String, dynamic>> data = snapshot.data!;
-        final List<Map<String, dynamic>> filteredData = data.where((record) {
-          final name = record['name'].toString().toLowerCase();
-          final queryLower = query.toLowerCase();
-          return name.contains(queryLower);
-        }).toList();
-
-        return ListView.builder(
-          itemCount: filteredData.length,
-          itemBuilder: (context, index) {
-            var record = filteredData[index];
-            return ListTile(
-              title: Text(record['name'] ?? 'No Name'),
-              onTap: () {
-                close(context, record['name']);
-              },
-            );
-          },
         );
       },
     );

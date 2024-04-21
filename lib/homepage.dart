@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'AdminPanelScreen.dart';
 import 'attendance_page.dart';
 import 'malyapage.dart';
 import 'data_page.dart';
@@ -84,6 +85,17 @@ class _Bara3emHomePageState extends State<Bara3emHomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => SettingsPage()),
+                );
+              },
+            ),
+            // Add the new ListTile for the Admin Panel
+            ListTile(
+              leading: Icon(Icons.admin_panel_settings),
+              title: Text('Admin Panel'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AdminPanelScreen(isAdmin: true,)),
                 );
               },
             ),

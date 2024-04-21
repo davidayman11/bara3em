@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors, use_key_in_widget_constructors
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -14,50 +12,78 @@ class ProfilePage extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           } else {
             if (snapshot.hasError || snapshot.data == null) {
-              return Center(child: Text('Error: Unable to fetch user data'));
+              return _buildErrorWidget();
             } else {
               final User user = snapshot.data!;
-              return SingleChildScrollView(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(height: 20),
-                    // User profile image
-                    CircleAvatar(
-                      radius: 80,
-                      // Placeholder image
-                      backgroundImage: AssetImage('img/5.jpg'),
-                    ),
-                    SizedBox(height: 20),
-                    // User name
-                    Text(
-                      user.displayName ?? 'User',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    // Divider for separation
-                    Divider(),
-                    // User details
-                    ListTile(
-                      leading: Icon(Icons.email),
-                      title: Text(
-                        user.email ?? 'No email',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ],
-                ),
-              );
+              return _buildProfileWidget(user);
             }
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Center(
+      child: Text(
+        'Error: Unable to fetch user data',
+        style: TextStyle(
+          color: Colors.red,
+          fontSize: 18,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileWidget(User user) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(height: 20),
+          _buildUserProfileImage(), // Extracted method for user profile image
+          SizedBox(height: 20),
+          Text(
+            user.displayName ?? 'User',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 20),
+          Divider(
+            color: Colors.grey[400],
+            thickness: 1,
+            height: 30,
+          ),
+          _buildUserDetails(user), // Extracted method for user details
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserProfileImage() {
+    return CircleAvatar(
+      radius: 80,
+      backgroundImage: AssetImage('img/5.jpg'), // Change to your image asset
+    );
+  }
+
+  Widget _buildUserDetails(User user) {
+    return ListTile(
+      leading: Icon(
+        Icons.email,
+        color: Colors.blueAccent,
+      ),
+      title: Text(
+        user.email ?? 'No email',
+        style: TextStyle(fontSize: 16),
       ),
     );
   }

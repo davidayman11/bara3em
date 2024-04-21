@@ -48,39 +48,30 @@ class _EshtrakPageState extends State<EshtrakPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _search,
-                    enabled: _searchEnabled,
-                    decoration: InputDecoration(
-                      labelText: 'Search',
-                      prefixIcon: const Icon(Icons.search),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 0, horizontal: 20),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Theme.of(context).primaryColor),
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                    ),
-                  ),
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _search,
+              decoration: InputDecoration(
+                labelText: 'Search',
+                prefixIcon: Icon(Icons.search),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    _search('');
+                  },
+                )
+                    : null,
+                filled: true,
+                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide.none,
                 ),
-                IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: _clearSearch,
-                ),
-              ],
+              ),
             ),
           ),
           Expanded(
@@ -246,81 +237,6 @@ class _EshtrakPageState extends State<EshtrakPage> {
         ),
       );
     }
-  }
-}
-
-class CustomSearchDelegate extends SearchDelegate<String> {
-  final Stream<QuerySnapshot> eshtrakStream;
-
-  CustomSearchDelegate({required this.eshtrakStream});
-
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, '');
-      },
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return _buildSearchResults(context);
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return _buildSearchResults(context);
-  }
-
-  Widget _buildSearchResults(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: eshtrakStream,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No data available'));
-        }
-
-        final List<QueryDocumentSnapshot> data = snapshot.data!.docs;
-        final List<QueryDocumentSnapshot> filteredData = data.where((doc) {
-          final name = doc['name'].toString().toLowerCase();
-          final queryLower = query.toLowerCase();
-          return name.contains(queryLower);
-        }).toList();
-
-        return ListView.builder(
-          itemCount: filteredData.length,
-          itemBuilder: (context, index) {
-            var document = filteredData[index];
-            return ListTile(
-              title: Text(document['name'] ?? 'No Name'),
-              onTap: () {
-                close(context, document['name']);
-              },
-            );
-          },
-        );
-      },
-    );
   }
 }
 

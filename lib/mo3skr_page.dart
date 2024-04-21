@@ -46,24 +46,29 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
               onChanged: _search,
               decoration: InputDecoration(
                 labelText: 'Search',
                 prefixIcon: Icon(Icons.search),
-                contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20), // Adjust padding
-                border: OutlineInputBorder( // Defines the border
-                  borderRadius: BorderRadius.circular(30.0), // Adjust the corner radius for rounder edges
-                ),
-                enabledBorder: OutlineInputBorder( // Border style when TextField is enabled
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    _search('');
+                  },
+                )
+                    : null,
+                filled: true,
+                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                contentPadding:
+                EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
-                ),
-                focusedBorder: OutlineInputBorder( // Border style when TextField is focused
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                  borderRadius: BorderRadius.circular(30.0),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
@@ -90,7 +95,8 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
                         _showEditDialog(context, document);
                       },
                       child: Card(
-                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        margin:
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         elevation: 4,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
@@ -173,14 +179,16 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                _clearControllers(nameController, taly3aController, paidController);
+                _clearControllers(
+                    nameController, taly3aController, paidController);
                 Navigator.of(context).pop();
               },
               child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                _saveData(nameController.text, taly3aController.text, paidController.text);
+                _saveData(nameController.text, taly3aController.text,
+                    paidController.text);
                 Navigator.of(context).pop();
               },
               child: Text('Save'),
@@ -191,10 +199,14 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
     );
   }
 
-  Future<void> _showEditDialog(BuildContext context, DocumentSnapshot document) async {
-    final TextEditingController nameController = TextEditingController(text: document['name']);
-    final TextEditingController taly3aController = TextEditingController(text: document['taly3a']);
-    final TextEditingController paidController = TextEditingController(text: document['paid']);
+  Future<void> _showEditDialog(
+      BuildContext context, DocumentSnapshot document) async {
+    final TextEditingController nameController =
+    TextEditingController(text: document['name']);
+    final TextEditingController taly3aController =
+    TextEditingController(text: document['taly3a']);
+    final TextEditingController paidController =
+    TextEditingController(text: document['paid']);
 
     await showDialog(
       context: context,
@@ -221,14 +233,16 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                _clearControllers(nameController, taly3aController, paidController);
+                _clearControllers(
+                    nameController, taly3aController, paidController);
                 Navigator.of(context).pop();
               },
               child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                _updateData(document.id, nameController.text, taly3aController.text, paidController.text);
+                _updateData(document.id, nameController.text,
+                    taly3aController.text, paidController.text);
                 Navigator.of(context).pop();
               },
               child: Text('Save'),
@@ -255,7 +269,9 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
     });
   }
 
-  void _clearControllers(TextEditingController nameController, TextEditingController taly3aController,
+  void _clearControllers(
+      TextEditingController nameController,
+      TextEditingController taly3aController,
       TextEditingController paidController) {
     nameController.clear();
     taly3aController.clear();
@@ -285,7 +301,8 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
       sheet.appendRow(['Name', 'Taly3a', 'Paid']);
 
       for (var doc in data.docs) {
-        sheet.appendRow([doc['name'] ?? '', doc['taly3a'] ?? '', doc['paid'] ?? '']);
+        sheet.appendRow(
+            [doc['name'] ?? '', doc['taly3a'] ?? '', doc['paid'] ?? '']);
       }
 
       Directory directory;
@@ -324,7 +341,8 @@ class _Mo3skrPageState extends State<Mo3skrPage> {
       print('Error downloading data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('An error occurred while downloading data. Please try again later.'),
+          content: Text(
+              'An error occurred while downloading data. Please try again later.'),
           duration: Duration(seconds: 2),
         ),
       );
