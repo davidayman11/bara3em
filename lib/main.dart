@@ -1,4 +1,3 @@
-// ignore_for_file: prefer_const_constructors
 import 'dart:io';
 import 'package:bara3em/welcome_page.dart';
 import 'package:firebase_core/firebase_core.dart';

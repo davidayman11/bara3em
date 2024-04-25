@@ -19,7 +19,7 @@ class _WelcomePageState extends State<WelcomePage> {
         _isVisible = false;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Bara3emHomePage()),
+          MaterialPageRoute(builder: (context) => SimpleLoginScreen()),
         );
       });
     });
