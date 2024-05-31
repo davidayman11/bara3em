@@ -46,6 +46,10 @@ dependencies:
   url_launcher: ^6.0.6
   local_auth: ^2.0.1
   mailer: ^5.0.0
+  flutter_bloc: ^7.0.0
+  file_picker: ^5.0.0
+  permission_handler: ^10.2.0
+
 
 
 

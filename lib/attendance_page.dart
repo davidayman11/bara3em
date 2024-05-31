@@ -14,8 +14,10 @@ class AttendancePage extends StatefulWidget {
 
 class _AttendancePageState extends State<AttendancePage> {
   final TextEditingController _searchController = TextEditingController();
-  late Stream<List<Map<String, dynamic>>> _attendanceStream;
+  late Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _attendanceStream;
   Timer? _debounce;
+  List<String> _selectedNames = [];
+  List<String> _selectedDocIds = [];
 
   @override
   void initState() {
@@ -31,9 +33,9 @@ class _AttendancePageState extends State<AttendancePage> {
     super.dispose();
   }
 
-  Stream<List<Map<String, dynamic>>> _fetchAttendance() {
+  Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _fetchAttendance() {
     return FirebaseFirestore.instance.collection('Attendance').snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => doc.data()).toList();
+      return snapshot.docs;
     });
   }
 
@@ -52,7 +54,7 @@ class _AttendancePageState extends State<AttendancePage> {
           .where('name', isLessThanOrEqualTo: '$query\uf8ff')
           .snapshots()
           .map((snapshot) {
-        return snapshot.docs.map((doc) => doc.data()).toList();
+        return snapshot.docs;
       });
     });
   }
@@ -73,8 +75,8 @@ class _AttendancePageState extends State<AttendancePage> {
         sheet.appendRow([doc['name'], ...days]);
       }
 
-      Directory? directory = await getExternalStorageDirectory();
-      final filePath = '${directory!.path}/attendance_data.xlsx';
+      Directory directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/attendance_data.xlsx';
       final file = File(filePath);
 
       final excelData = excel.encode();
@@ -82,8 +84,14 @@ class _AttendancePageState extends State<AttendancePage> {
         await file.writeAsBytes(excelData);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Data downloaded successfully'),
+            content: Text('Attendance data downloaded successfully'),
             duration: Duration(seconds: 2),
+            action: SnackBarAction(
+              label: 'Open',
+              onPressed: () {
+                // Implement file opening here
+              },
+            ),
           ),
         );
       } else {
@@ -93,11 +101,88 @@ class _AttendancePageState extends State<AttendancePage> {
       print('Error downloading data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('An error occurred while downloading data. Please try again later.'),
+          content: Text('Failed to download attendance data. Please try again later.'),
           duration: Duration(seconds: 2),
         ),
       );
     }
+  }
+
+  Future<void> _updateAttendance(String day) async {
+    try {
+      for (int i = 0; i < _selectedDocIds.length; i++) {
+        await FirebaseFirestore.instance
+            .collection('Attendance')
+            .doc(_selectedDocIds[i])
+            .update({day: true});
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Attendance recorded successfully for selected names on $day'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      setState(() {
+        _selectedNames.clear();
+        _selectedDocIds.clear();
+      });
+    } catch (e) {
+      print('Error updating attendance: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to record attendance. Please try again later.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _showDetailsDialog(BuildContext context, Map<String, dynamic> record) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Attendance Details for ${record['name']}'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: List.generate(
+              9,
+                  (i) => Text('Day ${i + 1}: ${record['day${i + 1}'] ?? 'Not available'}'),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDaySelectionMenu(BuildContext context) {
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(100, 100, 0, 0),
+      items: List.generate(9, (index) {
+        return PopupMenuItem<String>(
+          value: 'day${index + 1}',
+          child: Text('Record Attendance for Day ${index + 1}'),
+        );
+      }),
+    ).then((value) {
+      if (value != null) {
+        _updateAttendance(value);
+      }
+    });
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _selectedNames.clear();
+      _selectedDocIds.clear();
+    });
   }
 
   @override
@@ -118,9 +203,8 @@ class _AttendancePageState extends State<AttendancePage> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _searchController,
-              onChanged: _search,
               decoration: InputDecoration(
-                labelText: 'Search',
+                labelText: 'Search by Name',
                 prefixIcon: Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -142,14 +226,14 @@ class _AttendancePageState extends State<AttendancePage> {
             ),
           ),
           Expanded(
-            child: StreamBuilder<List<Map<String, dynamic>>>(
+            child: StreamBuilder<List<QueryDocumentSnapshot<Map<String, dynamic>>>>(
               stream: _attendanceStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No data found'));
+                  return Center(child: Text('No attendance records found'));
                 }
                 return ListView.builder(
                   itemCount: snapshot.data!.length,
@@ -159,8 +243,22 @@ class _AttendancePageState extends State<AttendancePage> {
                       margin: EdgeInsets.all(8.0),
                       child: ListTile(
                         title: Text(record['name'] ?? 'Unknown'),
-                        subtitle: Text('Details here...'),
-                        onTap: () => _showDetailsDialog(context, record),
+                        subtitle: Text('Tap to view details, long press to select for attendance'),
+                        onTap: () => _showDetailsDialog(context, record.data()),
+                        onLongPress: () {
+                          setState(() {
+                            if (_selectedDocIds.contains(record.id)) {
+                              _selectedDocIds.remove(record.id);
+                              _selectedNames.remove(record['name']);
+                            } else {
+                              _selectedDocIds.add(record.id);
+                              _selectedNames.add(record['name']);
+                            }
+                          });
+                        },
+                        trailing: _selectedDocIds.contains(record.id)
+                            ? Icon(Icons.check_circle, color: Colors.green)
+                            : null,
                       ),
                     );
                   },
@@ -168,34 +266,44 @@ class _AttendancePageState extends State<AttendancePage> {
               },
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  void _showDetailsDialog(BuildContext context, Map<String, dynamic> record) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Details for ${record['name']}'),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: List.generate(
-                9,
-                    (i) => Text('Day ${i + 1}: ${record['day${i + 1}'] ?? 'Not available'}'),
+          if (_selectedDocIds.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(16.0),
+              color: Theme.of(context).colorScheme.surface,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => _showDaySelectionMenu(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                    ),
+                    child: Text(
+                      'Record Attendance for ${_selectedNames.length} Selected Names',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _clearSelection,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: Text(
+                      'Clear Selection',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
   }
 }

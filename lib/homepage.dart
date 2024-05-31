@@ -16,7 +16,7 @@ class _Bara3emHomePageState extends State<Bara3emHomePage> {
   int _currentIndex = 0;
   final List<Widget> _children = [
     AttendancePage(),
-    MalyaPage(),
+    MalyaPage(username: 'David',),
     DataPage(),
   ];
 
@@ -112,6 +112,8 @@ class _Bara3emHomePageState extends State<Bara3emHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         onTap: onTabTapped,
         currentIndex: _currentIndex,
+        selectedItemColor: Colors.lightBlueAccent, // Set the selected item color to blue
+        unselectedItemColor: Colors.grey, // Set the unselected item color to grey
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.check_circle_outline),
