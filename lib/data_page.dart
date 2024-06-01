@@ -62,8 +62,7 @@ class _DataPageState extends State<DataPage> {
               ),
             ),
           ),
-
-      Expanded(
+          Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _dataStream,
               builder: (context, snapshot) {
@@ -134,6 +133,7 @@ class _DataPageState extends State<DataPage> {
       context,
       MaterialPageRoute(
         builder: (context) => DetailsPage(
+          documentId: document.id,
           name: document['name'].toString() ?? 'No Name',
           image: 'img/5.jpg',
           currentGrade: document['Current grade'].toString() ?? 'Unknown',
@@ -165,7 +165,8 @@ class _DataPageState extends State<DataPage> {
   }
 }
 
-class DetailsPage extends StatelessWidget {
+class DetailsPage extends StatefulWidget {
+  final String documentId;
   final String name;
   final String image;
   final String currentGrade;
@@ -180,6 +181,7 @@ class DetailsPage extends StatelessWidget {
   final String tale3A;
 
   const DetailsPage({
+    required this.documentId,
     required this.name,
     required this.image,
     required this.currentGrade,
@@ -195,40 +197,152 @@ class DetailsPage extends StatelessWidget {
   });
 
   @override
+  _DetailsPageState createState() => _DetailsPageState();
+}
+
+class _DetailsPageState extends State<DetailsPage> {
+  late TextEditingController _nameController;
+  late TextEditingController _currentGradeController;
+  late TextEditingController _fatherNameController;
+  late TextEditingController _fatherPhoneController;
+  late TextEditingController _motherNameController;
+  late TextEditingController _motherPhoneController;
+  late TextEditingController _nationalIdController;
+  late TextEditingController _childPhoneController;
+  late TextEditingController _nextGradeController;
+  late TextEditingController _schoolController;
+  late TextEditingController _tale3AController;
+
+  bool _isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.name);
+    _currentGradeController = TextEditingController(text: widget.currentGrade);
+    _fatherNameController = TextEditingController(text: widget.fatherName);
+    _fatherPhoneController = TextEditingController(text: widget.fatherPhone);
+    _motherNameController = TextEditingController(text: widget.motherName);
+    _motherPhoneController = TextEditingController(text: widget.motherPhone);
+    _nationalIdController = TextEditingController(text: widget.nationalId);
+    _childPhoneController = TextEditingController(text: widget.childPhone);
+    _nextGradeController = TextEditingController(text: widget.nextGrade);
+    _schoolController = TextEditingController(text: widget.school);
+    _tale3AController = TextEditingController(text: widget.tale3A);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _currentGradeController.dispose();
+    _fatherNameController.dispose();
+    _fatherPhoneController.dispose();
+    _motherNameController.dispose();
+    _motherPhoneController.dispose();
+    _nationalIdController.dispose();
+    _childPhoneController.dispose();
+    _nextGradeController.dispose();
+    _schoolController.dispose();
+    _tale3AController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Details'),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AspectRatio(
-              aspectRatio: 6 / 6,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10.0),
-                child: Image.asset(
-                  image,
-                  fit: BoxFit.cover,
-                ),
+        appBar: AppBar(
+          title: Text(_isEditing ? 'Edit Details' : 'Details'),
+          actions: [
+            if (!_isEditing)
+              IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: () {
+                  setState(() {
+                    _isEditing = true;
+                  });
+                },
               ),
-            ),
-            SizedBox(height: 16.0),
-            DetailItem(label: 'Name', value: name),
-            DetailItem(label: 'Current Grade', value: currentGrade),
-            DetailItem(label: 'Father\'s Name', value: fatherName),
-            _buildPhoneCallItem(context, 'Father\'s Phone', fatherPhone),
-            DetailItem(label: 'Mother\'s Name', value: motherName),
-            _buildPhoneCallItem(context, 'Mother\'s Phone', motherPhone),
-            DetailItem(label: 'National ID', value: nationalId),
-            _buildPhoneCallItem(context, 'Child Phone', childPhone),
-            DetailItem(label: 'Next Grade', value: nextGrade),
-            DetailItem(label: 'School', value: school),
-            DetailItem(label: 'Tale3A', value: tale3A),
+            if (_isEditing)
+              IconButton(
+                icon: Icon(Icons.save),
+                onPressed: () => _saveChanges(context),
+              ),
           ],
         ),
+        body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+    AspectRatio(
+    aspectRatio: 6 / 6,
+    child: ClipRRect(
+    borderRadius: BorderRadius.circular(10.0),
+    child: Image.asset(
+    widget.image,
+    fit: BoxFit.cover,
+    ),
+    ),
+    ),
+    SizedBox(height: 16.0),
+    _isEditing ? _buildTextField(_nameController, 'Name') : DetailItem(label: 'Name', value: widget.name),
+    _isEditing
+    ? _buildTextField(_currentGradeController, 'Current Grade')
+        : DetailItem(label: 'Current Grade', value: widget.currentGrade),
+    _isEditing
+    ? _buildTextField(_fatherNameController, 'Father\'s Name')
+        : DetailItem(label: 'Father\'s Name', value: widget.fatherName),
+    _isEditing
+    ? _buildTextField(_fatherPhoneController, 'Father\'s Phone')
+        : _buildPhoneCallItem(context, 'Father\'s Phone', widget.fatherPhone),
+    _isEditing
+    ? _buildTextField(_motherNameController, 'Mother\'s Name')
+        : DetailItem(label: 'Mother\'s Name', value: widget                .motherName),
+      _isEditing
+          ? _buildTextField(_motherPhoneController, 'Mother\'s Phone')
+          : _buildPhoneCallItem(context, 'Mother\'s Phone', widget.motherPhone),
+      _isEditing
+          ? _buildTextField(_nationalIdController, 'National ID')
+          : DetailItem(label: 'National ID', value: widget.nationalId),
+      _isEditing
+          ? _buildTextField(_childPhoneController, 'Child Phone')
+          : _buildPhoneCallItem(context, 'Child Phone', widget.childPhone),
+      _isEditing
+          ? _buildTextField(_nextGradeController, 'Next Grade')
+          : DetailItem(label: 'Next Grade', value: widget.nextGrade),
+      _isEditing
+          ? _buildTextField(_schoolController, 'School')
+          : DetailItem(label: 'School', value: widget.school),
+      _isEditing
+          ? _buildTextField(_tale3AController, 'Tale3A')
+          : DetailItem(label: 'Tale3A', value: widget.tale3A),
+    ],
+    ),
+        ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16.0,
+              color: Theme.of(context).textTheme.bodyText1!.color,
+            ),
+          ),
+          TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -266,6 +380,36 @@ class DetailsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _saveChanges(BuildContext context) {
+    try {
+      FirebaseFirestore.instance.collection('Database').doc(widget.documentId).update({
+        'name': _nameController.text,
+        'Current grade': _currentGradeController.text,
+        'Father’s name': _fatherNameController.text,
+        'Father’s phone': _fatherPhoneController.text,
+        'Mother’s name': _motherNameController.text,
+        'Mother’s phone': _motherPhoneController.text,
+        'National id': _nationalIdController.text,
+        'child phone': _childPhoneController.text,
+        'next grade': _nextGradeController.text,
+        'school': _schoolController.text,
+        'tale3A': _tale3AController.text,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Changes saved')),
+      );
+
+      setState(() {
+        _isEditing = false;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save changes')),
+      );
+    }
   }
 }
 
@@ -309,3 +453,4 @@ void main() {
     home: DataPage(),
   ));
 }
+
