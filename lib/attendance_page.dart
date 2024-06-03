@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 
+enum FilterCriteria { all, day1, day2, day3, day4, day5, day6, day7, day8, day9}
+
 class AttendancePage extends StatefulWidget {
   const AttendancePage({Key? key}) : super(key: key);
 
@@ -18,6 +20,7 @@ class _AttendancePageState extends State<AttendancePage> {
   Timer? _debounce;
   List<String> _selectedNames = [];
   List<String> _selectedDocIds = [];
+  FilterCriteria _currentFilterCriteria = FilterCriteria.all;
 
   @override
   void initState() {
@@ -34,9 +37,19 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 
   Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _fetchAttendance() {
-    return FirebaseFirestore.instance.collection('Attendance').snapshots().map((snapshot) {
-      return snapshot.docs;
-    });
+    if (_currentFilterCriteria == FilterCriteria.all) {
+      return FirebaseFirestore.instance.collection('Attendance').snapshots().map((snapshot) {
+        return snapshot.docs;
+      });
+    } else {
+      return FirebaseFirestore.instance
+          .collection('Attendance')
+          .where(_currentFilterCriteria.toString().split('.').last, isEqualTo: true)
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs;
+      });
+    }
   }
 
   void _onSearchChanged() {
@@ -47,16 +60,30 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 
   void _search(String query) {
-    setState(() {
-      _attendanceStream = FirebaseFirestore.instance
-          .collection('Attendance')
-          .where('name', isGreaterThanOrEqualTo: query)
-          .where('name', isLessThanOrEqualTo: '$query\uf8ff')
-          .snapshots()
-          .map((snapshot) {
-        return snapshot.docs;
+    if (_currentFilterCriteria == FilterCriteria.all) {
+      setState(() {
+        _attendanceStream = FirebaseFirestore.instance
+            .collection('Attendance')
+            .where('name', isGreaterThanOrEqualTo: query)
+            .where('name', isLessThanOrEqualTo: '$query\uf8ff')
+            .snapshots()
+            .map((snapshot) {
+          return snapshot.docs;
+        });
       });
-    });
+    } else {
+      setState(() {
+        _attendanceStream = FirebaseFirestore.instance
+            .collection('Attendance')
+            .where('name', isGreaterThanOrEqualTo: query)
+            .where('name', isLessThanOrEqualTo: '$query\uf8ff')
+            .where(_currentFilterCriteria.toString().split('.').last, isEqualTo: true)
+            .snapshots()
+            .map((snapshot) {
+          return snapshot.docs;
+        });
+      });
+    }
   }
 
   Future<void> _downloadData() async {
@@ -136,7 +163,6 @@ class _AttendancePageState extends State<AttendancePage> {
       );
     }
   }
-
   void _showDetailsDialog(BuildContext context, Map<String, dynamic> record) {
     showDialog(
       context: context,
@@ -145,10 +171,11 @@ class _AttendancePageState extends State<AttendancePage> {
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(
-              9,
-                  (i) => Text('Day ${i + 1}: ${record['day${i + 1}'] ?? 'Not available'}'),
-            ),
+            children: [
+              for (int i = 1; i <= 9; i++)
+                Text('Day $i: ${record['day$i'] ?? 'Not available'}'),
+              Text('Tale3A: ${record['tale3A'] ?? 'Not available'}'),
+            ],
           ),
         ),
         actions: [
@@ -160,6 +187,7 @@ class _AttendancePageState extends State<AttendancePage> {
       ),
     );
   }
+
 
   void _showDaySelectionMenu(BuildContext context) {
     showMenu(
@@ -191,6 +219,28 @@ class _AttendancePageState extends State<AttendancePage> {
       appBar: AppBar(
         title: Text('Attendance Tracker'),
         actions: [
+          DropdownButton<FilterCriteria>(
+            value: _currentFilterCriteria,
+            icon: Icon(Icons.filter_list, color: Colors.white),
+            underline: Container(),
+            onChanged: (FilterCriteria? newValue) {
+              if (newValue != null) {
+                setState(() {
+                  _currentFilterCriteria = newValue;
+                  _attendanceStream = _fetchAttendance();
+                });
+              }
+            },
+            items: FilterCriteria.values.map((FilterCriteria criteria) {
+              return DropdownMenuItem<FilterCriteria>(
+                value: criteria,
+                child: Text(
+                  criteria == FilterCriteria.all ? 'All' : criteria.toString().split('.').last,
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
+            }).toList(),
+          ),
           IconButton(
             icon: Icon(Icons.file_download),
             onPressed: _downloadData,
