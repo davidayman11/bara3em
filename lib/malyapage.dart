@@ -14,9 +14,9 @@ class MalyaPage extends StatelessWidget {
     if (!AuthService.isUserAllowed(username)) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Access Denied'),
+          title: const Text('Access Denied'),
         ),
-        body: Center(
+        body: const Center(
           child: Text('You do not have permission to access this page.'),
         ),
       );
@@ -24,7 +24,7 @@ class MalyaPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Malya'),
+        title: const Text('Malya'),
       ),
       body: Center(
         child: Column(
@@ -34,10 +34,10 @@ class MalyaPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => EshtrakPage()),
+                  MaterialPageRoute(builder: (context) => const EshtrakPage()),
                 );
               },
-              child: Text('Eshtrak'),
+              child: const Text('Eshtrak'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -46,7 +46,7 @@ class MalyaPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => Mo3skrPage()),
                 );
               },
-              child: Text('Mo3skr'),
+              child: const Text('Mo3skr'),
             ),
           ],
         ),

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api
+
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -5,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
 
-enum FilterCriteria { all, day1, day2, day3, day4, day5, day6, day7, day8, day9}
+enum FilterCriteria { all, tale3A }
 
 class AttendancePage extends StatefulWidget {
   const AttendancePage({Key? key}) : super(key: key);
@@ -18,9 +20,10 @@ class _AttendancePageState extends State<AttendancePage> {
   final TextEditingController _searchController = TextEditingController();
   late Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _attendanceStream;
   Timer? _debounce;
-  List<String> _selectedNames = [];
-  List<String> _selectedDocIds = [];
+  final List<String> _selectedNames = [];
+  final List<String> _selectedDocIds = [];
   FilterCriteria _currentFilterCriteria = FilterCriteria.all;
+  String _selectedTale3A = 'All';
 
   @override
   void initState() {
@@ -37,19 +40,13 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 
   Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _fetchAttendance() {
-    if (_currentFilterCriteria == FilterCriteria.all) {
-      return FirebaseFirestore.instance.collection('Attendance').snapshots().map((snapshot) {
-        return snapshot.docs;
-      });
-    } else {
-      return FirebaseFirestore.instance
-          .collection('Attendance')
-          .where(_currentFilterCriteria.toString().split('.').last, isEqualTo: true)
-          .snapshots()
-          .map((snapshot) {
-        return snapshot.docs;
-      });
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance.collection('Attendance');
+    if (_currentFilterCriteria == FilterCriteria.tale3A && _selectedTale3A != 'All') {
+      query = query.where('tale3A', isEqualTo: _selectedTale3A);
     }
+    return query.snapshots().map((snapshot) {
+      return snapshot.docs;
+    });
   }
 
   void _onSearchChanged() {
@@ -60,30 +57,16 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 
   void _search(String query) {
-    if (_currentFilterCriteria == FilterCriteria.all) {
-      setState(() {
-        _attendanceStream = FirebaseFirestore.instance
-            .collection('Attendance')
-            .where('name', isGreaterThanOrEqualTo: query)
-            .where('name', isLessThanOrEqualTo: '$query\uf8ff')
-            .snapshots()
-            .map((snapshot) {
-          return snapshot.docs;
-        });
-      });
-    } else {
-      setState(() {
-        _attendanceStream = FirebaseFirestore.instance
-            .collection('Attendance')
-            .where('name', isGreaterThanOrEqualTo: query)
-            .where('name', isLessThanOrEqualTo: '$query\uf8ff')
-            .where(_currentFilterCriteria.toString().split('.').last, isEqualTo: true)
-            .snapshots()
-            .map((snapshot) {
-          return snapshot.docs;
-        });
-      });
-    }
+    setState(() {
+      var firestoreQuery = FirebaseFirestore.instance
+          .collection('Attendance')
+          .where('name', isGreaterThanOrEqualTo: query)
+          .where('name', isLessThanOrEqualTo: '$query\uf8ff');
+      if (_currentFilterCriteria == FilterCriteria.tale3A && _selectedTale3A != 'All') {
+        firestoreQuery = firestoreQuery.where('tale3A', isEqualTo: _selectedTale3A);
+      }
+      _attendanceStream = firestoreQuery.snapshots().map((snapshot) => snapshot.docs);
+    });
   }
 
   Future<void> _downloadData() async {
@@ -111,8 +94,8 @@ class _AttendancePageState extends State<AttendancePage> {
         await file.writeAsBytes(excelData);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Attendance data downloaded successfully'),
-            duration: Duration(seconds: 2),
+            content: const Text('Attendance data downloaded successfully'),
+            duration: const Duration(seconds: 2),
             action: SnackBarAction(
               label: 'Open',
               onPressed: () {
@@ -125,9 +108,8 @@ class _AttendancePageState extends State<AttendancePage> {
         throw Exception('Failed to encode Excel data');
       }
     } catch (e) {
-      print('Error downloading data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Failed to download attendance data. Please try again later.'),
           duration: Duration(seconds: 2),
         ),
@@ -146,7 +128,7 @@ class _AttendancePageState extends State<AttendancePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Attendance recorded successfully for selected names on $day'),
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
       setState(() {
@@ -156,13 +138,14 @@ class _AttendancePageState extends State<AttendancePage> {
     } catch (e) {
       print('Error updating attendance: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Failed to record attendance. Please try again later.'),
           duration: Duration(seconds: 2),
         ),
       );
     }
   }
+
   void _showDetailsDialog(BuildContext context, Map<String, dynamic> record) {
     showDialog(
       context: context,
@@ -174,25 +157,23 @@ class _AttendancePageState extends State<AttendancePage> {
             children: [
               for (int i = 1; i <= 9; i++)
                 Text('Day $i: ${record['day$i'] ?? 'Not available'}'),
-              Text('Tale3A: ${record['tale3A'] ?? 'Not available'}'),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Close'),
+            child: const Text('Close'),
           ),
         ],
       ),
     );
   }
 
-
   void _showDaySelectionMenu(BuildContext context) {
     showMenu(
       context: context,
-      position: RelativeRect.fromLTRB(100, 100, 0, 0),
+      position: const RelativeRect.fromLTRB(100, 100, 0, 0),
       items: List.generate(9, (index) {
         return PopupMenuItem<String>(
           value: 'day${index + 1}',
@@ -217,32 +198,42 @@ class _AttendancePageState extends State<AttendancePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Attendance Tracker'),
+        title: const Text('Attendance Tracker'),
         actions: [
-          DropdownButton<FilterCriteria>(
-            value: _currentFilterCriteria,
-            icon: Icon(Icons.filter_list, color: Colors.white),
+          DropdownButton<String>(
+            value: _selectedTale3A,
+            icon: const Icon(Icons.filter_list, color: Colors.white),
             underline: Container(),
-            onChanged: (FilterCriteria? newValue) {
+            onChanged: (String? newValue) {
               if (newValue != null) {
                 setState(() {
-                  _currentFilterCriteria = newValue;
+                  _selectedTale3A = newValue;
+                  _currentFilterCriteria = FilterCriteria.tale3A;
                   _attendanceStream = _fetchAttendance();
                 });
               }
             },
-            items: FilterCriteria.values.map((FilterCriteria criteria) {
-              return DropdownMenuItem<FilterCriteria>(
-                value: criteria,
-                child: Text(
-                  criteria == FilterCriteria.all ? 'All' : criteria.toString().split('.').last,
-                  style: TextStyle(color: Colors.white),
-                ),
+            items: [
+              'All',
+              'الجمبري',
+              'سلاحف البحر',
+              'القرش',
+              'قنديل البحر',
+              'الدولفين',
+              'نجمة البحر',
+              'الكابوريا',
+              'الاخطبوط',
+              'سمكة السيف',
+              'حصان البحر'
+            ].map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
               );
             }).toList(),
           ),
           IconButton(
-            icon: Icon(Icons.file_download),
+            icon: const Icon(Icons.file_download),
             onPressed: _downloadData,
           ),
         ],
@@ -255,10 +246,10 @@ class _AttendancePageState extends State<AttendancePage> {
               controller: _searchController,
               decoration: InputDecoration(
                 labelText: 'Search by Name',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                  icon: Icon(Icons.clear),
+                  icon: const Icon(Icons.clear),
                   onPressed: () {
                     _searchController.clear();
                     _search('');
@@ -267,7 +258,7 @@ class _AttendancePageState extends State<AttendancePage> {
                     : null,
                 filled: true,
                 fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-                contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
                   borderSide: BorderSide.none,
@@ -280,20 +271,29 @@ class _AttendancePageState extends State<AttendancePage> {
               stream: _attendanceStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No attendance records found'));
+                  return const Center(child: Text('No attendance records found'));
                 }
                 return ListView.builder(
                   itemCount: snapshot.data!.length,
                   itemBuilder: (context, index) {
                     var record = snapshot.data![index];
                     return Card(
-                      margin: EdgeInsets.all(8.0),
+                      margin: const EdgeInsets.all(8.0),
                       child: ListTile(
-                        title: Text(record['name'] ?? 'Unknown'),
-                        subtitle: Text('Tap to view details, long press to select for attendance'),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(record['name'] ?? 'Unknown'),
+                            if (record['tale3A'] != null)
+                              Text(
+                                'Tale3A: ${record['tale3A']}',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                          ],
+                        ),
                         onTap: () => _showDetailsDialog(context, record.data()),
                         onLongPress: () {
                           setState(() {
@@ -307,7 +307,7 @@ class _AttendancePageState extends State<AttendancePage> {
                           });
                         },
                         trailing: _selectedDocIds.contains(record.id)
-                            ? Icon(Icons.check_circle, color: Colors.green)
+                            ? const Icon(Icons.check_circle, color: Colors.green)
                             : null,
                       ),
                     );
@@ -319,7 +319,7 @@ class _AttendancePageState extends State<AttendancePage> {
           if (_selectedDocIds.isNotEmpty)
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               color: Theme.of(context).colorScheme.surface,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -336,13 +336,13 @@ class _AttendancePageState extends State<AttendancePage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: _clearSelection,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
-                    child: Text(
+                    child: const Text(
                       'Clear Selection',
                       style: TextStyle(
                         color: Colors.white,
@@ -359,7 +359,7 @@ class _AttendancePageState extends State<AttendancePage> {
 }
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     home: AttendancePage(),
   ));
 }

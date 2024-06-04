@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'homepage.dart';
 import 'login_page.dart';
 
 class WelcomePage extends StatefulWidget {
@@ -14,7 +13,7 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 1), () {
+    Timer(const Duration(seconds: 1), () {
       setState(() {
         _isVisible = false;
         Navigator.pushReplacement(
@@ -32,11 +31,11 @@ class _WelcomePageState extends State<WelcomePage> {
         children: [
           AnimatedOpacity(
             opacity: _isVisible ? 1.0 : 0.0,
-            duration: Duration(seconds: 1),
+            duration: const Duration(seconds: 1),
             child: Container(
               width: double.infinity,
               height: double.infinity,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage('img/applogo.png'),
                   fit: BoxFit.cover,
@@ -44,7 +43,7 @@ class _WelcomePageState extends State<WelcomePage> {
               ),
             ),
           ),
-          Positioned(
+          const Positioned(
             left: 0,
             right: 0,
             bottom: 190,

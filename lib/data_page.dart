@@ -30,7 +30,7 @@ class _DataPageState extends State<DataPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Database'),
+        title: const Text('Database'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -42,10 +42,10 @@ class _DataPageState extends State<DataPage> {
               onChanged: _search,
               decoration: InputDecoration(
                 labelText: 'Search',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                  icon: Icon(Icons.clear),
+                  icon: const Icon(Icons.clear),
                   onPressed: () {
                     _searchController.clear();
                     _search('');
@@ -54,7 +54,7 @@ class _DataPageState extends State<DataPage> {
                     : null,
                 filled: true,
                 fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-                contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
                   borderSide: BorderSide.none,
@@ -67,17 +67,17 @@ class _DataPageState extends State<DataPage> {
               stream: _dataStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No data available'));
+                  return const Center(child: Text('No data available'));
                 }
                 return GridView.builder(
-                  padding: EdgeInsets.all(8.0),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  padding: const EdgeInsets.all(8.0),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 8.0,
                     mainAxisSpacing: 8.0,
@@ -105,11 +105,11 @@ class _DataPageState extends State<DataPage> {
                                 fit: BoxFit.cover,
                               ),
                             ),
-                            SizedBox(height: 8.0),
+                            const SizedBox(height: 8.0),
                             Text(
                               document['name'] ?? 'No Name',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16.0,
                               ),
@@ -134,18 +134,18 @@ class _DataPageState extends State<DataPage> {
       MaterialPageRoute(
         builder: (context) => DetailsPage(
           documentId: document.id,
-          name: document['name'].toString() ?? 'No Name',
+          name: document['name'].toString(),
           image: 'img/5.jpg',
-          currentGrade: document['Current grade'].toString() ?? 'Unknown',
-          fatherName: document['Father’s name'].toString() ?? 'Unknown',
-          fatherPhone: document['Father’s phone'].toString() ?? 'Unknown',
-          motherName: document['Mother’s name'].toString() ?? 'Unknown',
-          motherPhone: document['Mother’s phone'].toString() ?? 'Unknown',
-          nationalId: document['National id'].toString() ?? 'Unknown',
-          childPhone: document['child phone'].toString() ?? 'Unknown',
-          nextGrade: document['next grade'].toString() ?? 'Unknown',
-          school: document['school'].toString() ?? 'Unknown',
-          tale3A: document['tale3A'].toString() ?? 'Unknown',
+          currentGrade: document['Current grade'].toString(),
+          fatherName: document['Father’s name'].toString(),
+          fatherPhone: document['Father’s phone'].toString(),
+          motherName: document['Mother’s name'].toString(),
+          motherPhone: document['Mother’s phone'].toString(),
+          nationalId: document['National id'].toString(),
+          childPhone: document['child phone'].toString(),
+          nextGrade: document['next grade'].toString(),
+          school: document['school'].toString(),
+          tale3A: document['tale3A'].toString(),
         ),
       ),
     );
@@ -255,7 +255,7 @@ class _DetailsPageState extends State<DetailsPage> {
           actions: [
             if (!_isEditing)
               IconButton(
-                icon: Icon(Icons.edit),
+                icon: const Icon(Icons.edit),
                 onPressed: () {
                   setState(() {
                     _isEditing = true;
@@ -264,13 +264,13 @@ class _DetailsPageState extends State<DetailsPage> {
               ),
             if (_isEditing)
               IconButton(
-                icon: Icon(Icons.save),
+                icon: const Icon(Icons.save),
                 onPressed: () => _saveChanges(context),
               ),
           ],
         ),
         body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
     child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -284,7 +284,7 @@ class _DetailsPageState extends State<DetailsPage> {
     ),
     ),
     ),
-    SizedBox(height: 16.0),
+    const SizedBox(height: 16.0),
     _isEditing ? _buildTextField(_nameController, 'Name') : DetailItem(label: 'Name', value: widget.name),
     _isEditing
     ? _buildTextField(_currentGradeController, 'Current Grade')
@@ -338,7 +338,7 @@ class _DetailsPageState extends State<DetailsPage> {
           ),
           TextField(
             controller: controller,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               border: OutlineInputBorder(),
             ),
           ),
@@ -399,7 +399,7 @@ class _DetailsPageState extends State<DetailsPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Changes saved')),
+        const SnackBar(content: Text('Changes saved')),
       );
 
       setState(() {
@@ -407,7 +407,7 @@ class _DetailsPageState extends State<DetailsPage> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save changes')),
+        const SnackBar(content: Text('Failed to save changes')),
       );
     }
   }
@@ -436,7 +436,7 @@ class DetailItem extends StatelessWidget {
           ),
           Text(
             value,
-            style: TextStyle(fontSize: 14.0),
+            style: const TextStyle(fontSize: 14.0),
           ),
         ],
       ),
@@ -450,7 +450,7 @@ void main() {
     theme: ThemeData(
       primarySwatch: Colors.blueGrey,
     ),
-    home: DataPage(),
+    home: const DataPage(),
   ));
 }
 

@@ -9,7 +9,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isAndroid) {
     await Firebase.initializeApp(
-      options: FirebaseOptions(
+      options: const FirebaseOptions(
         apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
         appId: "1:262757508649:android:9efce8f15c47409ad9de38",
         messagingSenderId: "262757508649",
@@ -92,10 +92,6 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
   void submit() async {
     if (validate()) {
       try {
-        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailController.text,
-          password: passwordController.text,
-        );
         await _saveCredentials();
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => Bara3emHomePage()));
       } on FirebaseAuthException catch (e) {
@@ -105,11 +101,11 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Login Error'),
+            title: const Text('Login Error'),
             content: Text(message),
             actions: [
               TextButton(
-                child: Text('OK'),
+                child: const Text('OK'),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
@@ -122,16 +118,16 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
+      appBar: AppBar(title: const Text('Login')),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 40),
-            Text('Welcome,', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 40),
+            const Text('Welcome,', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             Text('Sign in to continue!', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextField(
               controller: emailController,
               decoration: InputDecoration(
@@ -140,7 +136,7 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextField(
               controller: passwordController,
               obscureText: true,
@@ -150,7 +146,7 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Checkbox(
@@ -161,14 +157,14 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                     });
                   },
                 ),
-                Text('Remember me'),
+                const Text('Remember me'),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: submit,
-              child: Text('Log In'),
-              style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 50)),
+              child: const Text('Log In'),
+              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
             ),
           ],
         ),

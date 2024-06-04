@@ -1,3 +1,5 @@
+// ignore_for_file: use_key_in_widget_constructors
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -12,9 +14,9 @@ class AdminPanelScreen extends StatelessWidget {
     if (!isAdmin) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Unauthorized Access'),
+          title: const Text('Unauthorized Access'),
         ),
-        body: Center(
+        body: const Center(
           child: Text('You are not authorized to access this page.'),
         ),
       );
@@ -23,7 +25,7 @@ class AdminPanelScreen extends StatelessWidget {
     // If the user is an admin, show the admin panel
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Panel'),
+        title: const Text('Admin Panel'),
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('users').snapshots(),
@@ -33,7 +35,7 @@ class AdminPanelScreen extends StatelessWidget {
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+            return const CircularProgressIndicator();
           }
 
           return ListView(
@@ -47,7 +49,7 @@ class AdminPanelScreen extends StatelessWidget {
                     // Implement delete user functionality
                     _deleteUser(document.id);
                   },
-                  child: Text('Delete'),
+                  child: const Text('Delete'),
                 ),
               );
             }).toList(),

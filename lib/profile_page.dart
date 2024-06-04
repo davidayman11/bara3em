@@ -6,13 +6,13 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
+        title: const Text('Profile'),
       ),
       body: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           } else {
@@ -29,7 +29,7 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildErrorWidget() {
-    return Center(
+    return const Center(
       child: Text(
         'Error: Unable to fetch user data',
         style: TextStyle(
@@ -42,21 +42,21 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildProfileWidget(User user) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _buildUserProfileImage(), // Extracted method for user profile image
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Text(
             user.displayName ?? 'User',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Divider(
             color: Colors.grey[400],
             thickness: 1,
@@ -69,7 +69,7 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildUserProfileImage() {
-    return CircleAvatar(
+    return const CircleAvatar(
       radius: 80,
       backgroundImage: AssetImage('img/5.jpg'), // Change to your image asset
     );
@@ -77,13 +77,13 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildUserDetails(User user) {
     return ListTile(
-      leading: Icon(
+      leading: const Icon(
         Icons.email,
         color: Colors.blueAccent,
       ),
       title: Text(
         user.email ?? 'No email',
-        style: TextStyle(fontSize: 16),
+        style: const TextStyle(fontSize: 16),
       ),
     );
   }

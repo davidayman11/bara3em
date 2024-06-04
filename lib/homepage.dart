@@ -15,9 +15,9 @@ class Bara3emHomePage extends StatefulWidget {
 class _Bara3emHomePageState extends State<Bara3emHomePage> {
   int _currentIndex = 0;
   final List<Widget> _children = [
-    AttendancePage(),
-    MalyaPage(username: 'David',),
-    DataPage(),
+    const AttendancePage(),
+    const MalyaPage(username: 'David',),
+    const DataPage(),
   ];
 
   String? getDisplayName() {
@@ -51,26 +51,26 @@ class _Bara3emHomePageState extends State<Bara3emHomePage> {
             UserAccountsDrawerHeader(
               accountName: Text(
                 getDisplayName() ?? 'User',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               accountEmail: null,
-              currentAccountPicture: CircleAvatar(
+              currentAccountPicture: const CircleAvatar(
                 backgroundColor: Colors.white,
                 child: Icon(
                   Icons.person,
                   color: Colors.blue,
                 ),
               ),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.blue,
               ),
             ),
             ListTile(
-              leading: Icon(Icons.person),
-              title: Text('Profile'),
+              leading: const Icon(Icons.person),
+              title: const Text('Profile'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -79,8 +79,8 @@ class _Bara3emHomePageState extends State<Bara3emHomePage> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -90,8 +90,8 @@ class _Bara3emHomePageState extends State<Bara3emHomePage> {
             ),
             // Add the new ListTile for the Admin Panel
             ListTile(
-              leading: Icon(Icons.admin_panel_settings),
-              title: Text('Admin Panel'),
+              leading: const Icon(Icons.admin_panel_settings),
+              title: const Text('Admin Panel'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -99,10 +99,10 @@ class _Bara3emHomePageState extends State<Bara3emHomePage> {
                 );
               },
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Sign Out'),
+              leading: const Icon(Icons.logout),
+              title: const Text('Sign Out'),
               onTap: signOut,
             ),
           ],
@@ -115,15 +115,15 @@ class _Bara3emHomePageState extends State<Bara3emHomePage> {
         selectedItemColor: Colors.lightBlueAccent, // Set the selected item color to blue
         unselectedItemColor: Colors.grey, // Set the unselected item color to grey
         items: [
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.check_circle_outline),
             label: 'Attendance',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.money_off),
             label: 'Malya',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.analytics_outlined),
             label: 'Data',
           ),

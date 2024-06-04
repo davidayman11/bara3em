@@ -54,10 +54,10 @@ class _EshtrakPageState extends State<EshtrakPage> {
               onChanged: _search,
               decoration: InputDecoration(
                 labelText: 'Search',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                  icon: Icon(Icons.clear),
+                  icon: const Icon(Icons.clear),
                   onPressed: () {
                     _searchController.clear();
                     _search('');
@@ -66,7 +66,7 @@ class _EshtrakPageState extends State<EshtrakPage> {
                     : null,
                 filled: true,
                 fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-                contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0),
                   borderSide: BorderSide.none,
