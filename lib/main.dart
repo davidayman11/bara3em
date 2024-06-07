@@ -1,26 +1,37 @@
+// main.dart
+
 import 'dart:io';
-import 'package:bara3em/welcome_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Import provider
-import 'package:bara3em/login_page.dart'; // Import your LoginPage widget
-import 'theme_provider.dart'; // Import your ThemeProvider
+import 'package:provider/provider.dart';
+import 'package:bara3em/login_page.dart';
+import 'package:bara3em/theme_provider.dart';
+import 'api_service.dart'; // Import ApiService
+import 'welcome_page.dart'; // Update import to match your file structure
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
   if (Platform.isAndroid) {
     await Firebase.initializeApp(
-        options: FirebaseOptions(
-            apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
-            appId: "1:262757508649:android:9efce8f15c47409ad9de38",
-            messagingSenderId: "262757508649",
-            projectId: "bara3em-ee851"));
+      options: FirebaseOptions(
+          apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
+          appId: "1:262757508649:android:9efce8f15c47409ad9de38",
+          messagingSenderId: "262757508649",
+          projectId: "bara3em-ee851"
+      ),
+    );
   } else if (Platform.isIOS) {
     await Firebase.initializeApp();
   }
+
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(), // Create an instance of ThemeProvider
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        Provider<ApiService>(create: (_) => ApiService()), // Provide ApiService
+      ],
       child: const MyApp(),
     ),
   );
@@ -44,8 +55,7 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.blue.shade200, brightness: Brightness.dark),
         useMaterial3: true,
       ),
-      themeMode:
-          themeProvider.themeMode, // Use ThemeMode from the ThemeProvider
+      themeMode: themeProvider.themeMode,
       home: WelcomePage(),
       routes: {
         '/login': (context) => SimpleLoginScreen(),

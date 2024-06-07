@@ -62,10 +62,9 @@ flutter {
 }
 
 dependencies {
-    implementation(platform("com.google.firebase:firebase-bom:32.8.0"))
+    implementation platform("com.google.firebase:firebase-bom:32.8.0")
     implementation "androidx.biometric:biometric:1.1.0"
-
-    // Remove the javax.xml.bind dependency
+    // Add any other necessary dependencies here
 }
 
 tasks.register("prepareKotlinBuildScriptModel"){}

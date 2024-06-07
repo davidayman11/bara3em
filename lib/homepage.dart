@@ -17,7 +17,7 @@ class _Bara3emHomePageState extends State<Bara3emHomePage> {
   final List<Widget> _children = [
     const AttendancePage(),
     const MalyaPage(username: 'David',),
-    const DataPage(),
+    DataPage(),
   ];
 
   String? getDisplayName() {
