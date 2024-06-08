@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfilePage extends StatelessWidget {
   @override
@@ -20,7 +21,23 @@ class ProfilePage extends StatelessWidget {
               return _buildErrorWidget();
             } else {
               final User user = snapshot.data!;
-              return _buildProfileWidget(user);
+              return FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
+                builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else {
+                    if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
+                      return _buildErrorWidget();
+                    } else {
+                      final userData = snapshot.data!.data() as Map<String, dynamic>;
+                      return _buildProfileWidget(user, userData);
+                    }
+                  }
+                },
+              );
             }
           }
         },
@@ -40,14 +57,14 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileWidget(User user) {
+  Widget _buildProfileWidget(User user, Map<String, dynamic> userData) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
-          _buildUserProfileImage(), // Extracted method for user profile image
+          _buildUserProfileImage(userData['profileImageUrl']), // Pass profile image URL
           const SizedBox(height: 20),
           Text(
             user.displayName ?? 'User',
@@ -62,29 +79,31 @@ class ProfilePage extends StatelessWidget {
             thickness: 1,
             height: 30,
           ),
-          _buildUserDetails(user), // Extracted method for user details
+          _buildUserDetails(user.email ?? 'No email'), // Pass user email
         ],
       ),
     );
   }
 
-  Widget _buildUserProfileImage() {
-    return const CircleAvatar(
+  Widget _buildUserProfileImage(String? profileImageUrl) {
+    return CircleAvatar(
       radius: 80,
-      backgroundImage: AssetImage('img/5.jpg'), // Change to your image asset
+      backgroundImage:
+           AssetImage('assets/img/5.jpg'), // Fallback to local asset
     );
   }
 
-  Widget _buildUserDetails(User user) {
+  Widget _buildUserDetails(String email) {
     return ListTile(
       leading: const Icon(
         Icons.email,
         color: Colors.blueAccent,
       ),
       title: Text(
-        user.email ?? 'No email',
+        email,
         style: const TextStyle(fontSize: 16),
       ),
     );
   }
 }
+

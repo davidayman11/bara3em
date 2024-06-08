@@ -18,7 +18,7 @@ class _WelcomePageState extends State<WelcomePage> {
         _isVisible = false;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => SimpleLoginScreen()),
+          MaterialPageRoute(builder: (context) => LoginPage()),
         );
       });
     });

@@ -1,174 +1,136 @@
-import 'dart:io';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'homepage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'HomePage.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isAndroid) {
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: "AIzaSyCV0-NZHjm_0VZRvqEn0WhGc2Kpq49SBa8",
-        appId: "1:262757508649:android:9efce8f15c47409ad9de38",
-        messagingSenderId: "262757508649",
-        projectId: "bara3em-ee851",
-      ),
-    );
-  } else if (Platform.isIOS) {
-    await Firebase.initializeApp();
-  }
-  runApp(MyApp());
+
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: SimpleLoginScreen(),
-    );
-  }
-}
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String _errorMessage = '';
 
-class SimpleLoginScreen extends StatefulWidget {
-  @override
-  _SimpleLoginScreenState createState() => _SimpleLoginScreenState();
-}
+  // Hardcoded password for demonstration
+  static const String _validPassword = '123';
 
-class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  bool rememberMe = false;
-
-  String? emailError;
-  String? passwordError;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSavedCredentials();
-  }
-
-  Future<void> _loadSavedCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedEmail = prefs.getString('email');
-    final savedPassword = prefs.getString('password');
-    final savedRememberMe = prefs.getBool('rememberMe') ?? false;
-
-    if (savedRememberMe) {
-      setState(() {
-        emailController.text = savedEmail ?? '';
-        passwordController.text = savedPassword ?? '';
-        rememberMe = savedRememberMe;
-      });
-    }
-  }
-
-  Future<void> _saveCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (rememberMe) {
-      await prefs.setString('email', emailController.text);
-      await prefs.setString('password', passwordController.text);
-    } else {
-      await prefs.remove('email');
-      await prefs.remove('password');
-    }
-    await prefs.setBool('rememberMe', rememberMe);
-  }
-
-  bool validate() {
+  Future<void> _login() async {
     setState(() {
-      emailError = emailController.text.isEmpty || !RegExp(
-        r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
-      ).hasMatch(emailController.text) ? 'Enter a valid email' : null;
-
-      passwordError = passwordController.text.isEmpty ? 'Password cannot be empty' : null;
+      _isLoading = true;
+      _errorMessage = '';
     });
 
-    return emailError == null && passwordError == null;
-  }
+    try {
+      // Simulate API call delay (replace with actual API integration)
+      await Future.delayed(Duration(seconds: 1));
 
-  void submit() async {
-    if (validate()) {
-      try {
-        await _saveCredentials();
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => Bara3emHomePage()));
-      } on FirebaseAuthException catch (e) {
-        final message = e.code == 'user-not-found' || e.code == 'wrong-password'
-            ? 'Invalid email or password'
-            : 'The email address or password you entered is incorrect';
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Login Error'),
-            content: Text(message),
-            actions: [
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
+      // Check if password matches the hardcoded value
+      if (_passwordController.text == _validPassword) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Bara3emHomePage()),
         );
+      } else {
+        setState(() {
+          _errorMessage = 'Invalid credentials. Please try again.';
+        });
       }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to authenticate. Please try again later.';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(
+        title: Text('Login'),
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 40),
-            const Text('Welcome,', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            Text('Sign in to continue!', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-            const SizedBox(height: 20),
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            SizedBox(height: 20.0),
+            Text(
+              'Welcome,',
+              style: Theme.of(context).textTheme.headline4,
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              'Sign in to continue!',
+              style: Theme.of(context).textTheme.subtitle1,
+            ),
+            SizedBox(height: 40.0),
             TextField(
-              controller: emailController,
+              controller: _idController,
               decoration: InputDecoration(
-                labelText: 'Email',
-                errorText: emailError,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                labelText: 'ID',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.0),
             TextField(
-              controller: passwordController,
-              obscureText: true,
+              controller: _passwordController,
               decoration: InputDecoration(
                 labelText: 'Password',
-                errorText: passwordError,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+              ),
+              obscureText: true,
+            ),
+            SizedBox(height: 20.0),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _login,
+              child: _isLoading
+                  ? SizedBox(
+                width: 20.0,
+                height: 20.0,
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
+              )
+                  : Text('Login'),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Checkbox(
-                  value: rememberMe,
-                  onChanged: (value) {
-                    setState(() {
-                      rememberMe = value ?? false;
-                    });
-                  },
+            SizedBox(height: 16.0),
+            if (_errorMessage.isNotEmpty)
+              Text(
+                _errorMessage,
+                style: TextStyle(
+                  color: Theme.of(context).errorColor,
                 ),
-                const Text('Remember me'),
-              ],
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: submit,
-              child: const Text('Log In'),
-              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-            ),
+              ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _idController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

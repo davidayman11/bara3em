@@ -1,30 +1,17 @@
+// ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
-import 'auth_service.dart';
 import 'eshtrakat_page.dart';
 import 'mo3skr_page.dart';
 
 class MalyaPage extends StatelessWidget {
-  final String username;
-
-  const MalyaPage({Key? key, required this.username}) : super(key: key);
+  const MalyaPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (!AuthService.isUserAllowed(username)) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Access Denied'),
-        ),
-        body: const Center(
-          child: Text('You do not have permission to access this page.'),
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Malya'),
+        title: Text('Malya'),
       ),
       body: Center(
         child: Column(
@@ -34,10 +21,10 @@ class MalyaPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const EshtrakPage()),
+                  MaterialPageRoute(builder: (context) => EshtrakPage()),
                 );
               },
-              child: const Text('Eshtrak'),
+              child: Text('Eshtrak'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -46,7 +33,7 @@ class MalyaPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => Mo3skrPage()),
                 );
               },
-              child: const Text('Mo3skr'),
+              child: Text('Mo3skr'),
             ),
           ],
         ),

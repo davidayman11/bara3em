@@ -1,4 +1,3 @@
-// main.dart
 
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
@@ -58,7 +57,7 @@ class MyApp extends StatelessWidget {
       themeMode: themeProvider.themeMode,
       home: WelcomePage(),
       routes: {
-        '/login': (context) => SimpleLoginScreen(),
+        '/login': (context) => LoginPage(),
       },
       debugShowCheckedModeBanner: false,
     );
