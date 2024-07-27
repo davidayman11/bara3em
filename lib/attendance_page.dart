@@ -21,8 +21,7 @@ class AttendancePage extends StatefulWidget {
 
 class _AttendancePageState extends State<AttendancePage> {
   final TextEditingController _searchController = TextEditingController();
-  late Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
-      _attendanceStream;
+  late Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _attendanceStream;
   Timer? _debounce;
   final List<String> _selectedNames = [];
   final List<String> _selectedDocIds = [];
@@ -70,8 +69,7 @@ class _AttendancePageState extends State<AttendancePage> {
 
   Future<void> _downloadData() async {
     try {
-      final data =
-          await FirebaseFirestore.instance.collection('Attendance').get();
+      final data = await FirebaseFirestore.instance.collection('Attendance').get();
       final excel = Excel.createExcel();
       final sheet = excel['Sheet1'];
 
@@ -81,7 +79,11 @@ class _AttendancePageState extends State<AttendancePage> {
         'sun16-6',
         'sun23-6',
         'sun30-6',
-        'sun7-7'
+        'sun7-7',
+        'sun28-7', // Removed space
+        'sun4-8',  // Removed space
+        'sun11-8',
+        'sun18-8'
       ];
 
       // Create the header row with days
@@ -130,8 +132,7 @@ class _AttendancePageState extends State<AttendancePage> {
       print('Error: $e'); // Debugging info
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-              'Failed to download attendance data. Please try again later.'),
+          content: Text('Failed to download attendance data. Please try again later.'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -152,6 +153,10 @@ class _AttendancePageState extends State<AttendancePage> {
               _buildAttendanceRow('sun30-6', record),
               _buildAttendanceRow('sun7-7', record),
               _buildAttendanceRow('sun14-7', record),
+              _buildAttendanceRow('sun28-7', record),
+              _buildAttendanceRow('sun4-8', record),
+              _buildAttendanceRow('sun11-8', record),
+              _buildAttendanceRow('sun18-8', record),
             ],
           ),
         ),
@@ -176,7 +181,14 @@ class _AttendancePageState extends State<AttendancePage> {
         ],
       );
     } else {
-      return SizedBox.shrink(); // Hide if no attendance record for this day
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(day),
+          Text('No attendance recorded'),
+          SizedBox(height: 8),
+        ],
+      );
     }
   }
 
@@ -190,6 +202,10 @@ class _AttendancePageState extends State<AttendancePage> {
         'sun30-6',
         'sun7-7',
         'sun14-7',
+        'sun28-7', // Removed space
+        'sun4-8',  // Removed space
+        'sun11-8',
+        'sun18-8'
       ].map((day) {
         return PopupMenuItem<String>(
           value: day,
@@ -203,8 +219,7 @@ class _AttendancePageState extends State<AttendancePage> {
     });
   }
 
-  void _showAttendanceStatusSelectionMenu(
-      BuildContext context, String selectedDay) {
+  void _showAttendanceStatusSelectionMenu(BuildContext context, String selectedDay) {
     showMenu(
       context: context,
       position: const RelativeRect.fromLTRB(200, 0, 0, 200),
@@ -238,14 +253,12 @@ class _AttendancePageState extends State<AttendancePage> {
             .collection('Attendance')
             .doc(_selectedDocIds[i])
             .update({
-          day:
-              status, // Adjust the value as needed ('Present' or 'Will not come')
+          day: status, // Adjust the value as needed ('Present' or 'Will not come')
         });
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              'Attendance recorded successfully for selected names as $status on $day'),
+          content: Text('Attendance recorded successfully for selected names as $status on $day'),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -287,66 +300,60 @@ class _AttendancePageState extends State<AttendancePage> {
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _search('');
-                        },
-                      )
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    _search('');
+                  },
+                )
                     : null,
                 filled: true,
                 fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
+                  borderRadius: BorderRadius.circular(8.0),
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
           ),
           Expanded(
-            child: StreamBuilder<
-                List<QueryDocumentSnapshot<Map<String, dynamic>>>>(
+            child: StreamBuilder<List<QueryDocumentSnapshot<Map<String, dynamic>>>>(
               stream: _attendanceStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                      child: Text('No attendance records found'));
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Error loading data.'));
                 }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No records found.'));
+                }
+                final documents = snapshot.data!;
                 return ListView.builder(
-                  itemCount: snapshot.data!.length,
+                  itemCount: documents.length,
                   itemBuilder: (context, index) {
-                    var record = snapshot.data![index].data();
-                    return Card(
-                      margin: const EdgeInsets.all(8.0),
-                      child: ListTile(
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(record['name'] ?? 'Unknown'),
-                          ],
-                        ),
-                        onTap: () => _showDetailsDialog(context, record),
-                        onLongPress: () {
+                    final record = documents[index].data();
+                    return ListTile(
+                      title: Text(record['name']),
+                      trailing: Checkbox(
+                        value: _selectedDocIds.contains(documents[index].id),
+                        onChanged: (bool? value) {
                           setState(() {
-                            if (_selectedNames.contains(record['name'])) {
-                              _selectedNames.remove(record['name']);
-                              _selectedDocIds.remove(snapshot.data![index].id);
-                            } else {
+                            if (value == true) {
                               _selectedNames.add(record['name']);
-                              _selectedDocIds.add(snapshot.data![index].id);
+                              _selectedDocIds.add(documents[index].id);
+                            } else {
+                              _selectedNames.remove(record['name']);
+                              _selectedDocIds.remove(documents[index].id);
                             }
                           });
                         },
-                        trailing: _selectedNames.contains(record['name'])
-                            ? const Icon(Icons.check_circle,
-                                color: Colors.green)
-                            : null,
                       ),
+                      onTap: () {
+                        _showDetailsDialog(context, record);
+                      },
                     );
                   },
                 );
@@ -355,23 +362,57 @@ class _AttendancePageState extends State<AttendancePage> {
           ),
           if (_selectedNames.isNotEmpty)
             Container(
-              color: Colors.grey[200],
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('${_selectedNames.length} selected'),
-                  TextButton(
-                    onPressed: _clearSelection,
-                    child: const Text('Clear'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _showDaySelectionMenu(context),
-                    child: const Text('Record Attendance'),
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(8.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
-            ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Selected Names',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).textTheme.bodyText1?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${_selectedNames.length} selected',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).textTheme.bodyText1?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.clear,color: Colors.red,),
+                        onPressed: _clearSelection,
+                        tooltip: 'Clear Selection',
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _showDaySelectionMenu(context),
+                        child: const Text('Record Attendance'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )
+
         ],
       ),
     );
