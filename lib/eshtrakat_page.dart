@@ -83,18 +83,14 @@ class _EshtrakPageState extends State<EshtrakPage> {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(child: Text('No data found'));
                 }
-                // Inside your StreamBuilder builder function
                 return ListView.builder(
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {
                     var document = snapshot.data!.docs[index];
-
-                    // Assert type and perform null check
-                    var data = document.data();
-                    var notes =
-                    (data is Map<String, dynamic> && data.containsKey('notes'))
-                        ? data['notes']
-                        : '';
+                    var data = document.data() as Map<String, dynamic>;
+                    var name = data['name'] ?? 'No Name';
+                    var subscription = data['subscription'] ?? 'Unknown';
+                    var notes = data['notes'] ?? 'No Notes';
 
                     return Card(
                       margin: const EdgeInsets.symmetric(
@@ -104,17 +100,15 @@ class _EshtrakPageState extends State<EshtrakPage> {
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       child: ListTile(
-                        title: Text(document['name'] ?? 'No Name'),
+                        title: Text(name),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                                'Subscription: ${document['subscription'] ?? 'Unknown'}'),
-                            Text('Notes: $notes'), // Display notes field or 'No Notes'
+                            Text('Subscription: $subscription'),
+                            Text('Notes: $notes'),
                           ],
                         ),
-                        onTap: () =>
-                            _showDetailsDialog(context, document),
+                        onTap: () => _showDetailsDialog(context, document),
                       ),
                     );
                   },
@@ -144,30 +138,24 @@ class _EshtrakPageState extends State<EshtrakPage> {
   void _clearSearch() {
     setState(() {
       _searchController.clear();
+      _eshtrakStream = _firestore.collection('eshtrakat').snapshots();
     });
   }
 
   void _showDetailsDialog(BuildContext context, DocumentSnapshot document) {
-    // Extract data from the document
-    var data = document.data();
-    var notes = (data is Map<String, dynamic> && data.containsKey('notes'))
-        ? data['notes']
-        : '';
-    var subscription = (data is Map<String, dynamic> &&
-        data.containsKey('subscription'))
-        ? data['subscription']
-        : '';
+    var data = document.data() as Map<String, dynamic>;
+    var name = data['name'] ?? 'No Name';
+    var notes = data['notes'] ?? '';
+    var subscription = data['subscription'] ?? '';
 
-    // Controllers to manage text editing
-    var notesController = TextEditingController(text: notes.toString());
-    var subscriptionController =
-    TextEditingController(text: subscription.toString());
+    var notesController = TextEditingController(text: notes);
+    var subscriptionController = TextEditingController(text: subscription);
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Edit ${document['name']}'),
+          title: Text('Edit $name'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,13 +180,12 @@ class _EshtrakPageState extends State<EshtrakPage> {
             TextButton(
               child: Text('Save'),
               onPressed: () {
-                // Perform the update in Firestore
                 document.reference.update({
                   'notes': notesController.text,
                   'subscription': subscriptionController.text,
                 });
 
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
             ),
           ],
@@ -213,14 +200,15 @@ class _EshtrakPageState extends State<EshtrakPage> {
       final excel = Excel.createExcel();
       final sheet = excel['Sheet1'];
 
-      sheet.appendRow(['Name', 'Subscription', 'Notes']); // Add 'Notes' column
+      sheet.appendRow(['Name', 'Subscription', 'Notes']);
 
       for (var doc in data.docs) {
+        var docData = doc.data() as Map<String, dynamic>;
         sheet.appendRow([
-          doc['name'] ?? '',
-          doc['subscription'] ?? '',
-          doc['notes'] ?? ''
-        ]); // Include 'notes' field
+          docData['name'] ?? '',
+          docData['subscription'] ?? '',
+          docData['notes'] ?? ''
+        ]);
       }
 
       Directory directory;
@@ -267,6 +255,7 @@ class _EshtrakPageState extends State<EshtrakPage> {
     }
   }
 }
+
 class EditSubscriptionPage extends StatefulWidget {
   final QueryDocumentSnapshot document;
 
@@ -279,14 +268,14 @@ class EditSubscriptionPage extends StatefulWidget {
 
 class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
   late TextEditingController _subscriptionController;
-  late TextEditingController _notesController; // Updated to notes controller
+  late TextEditingController _notesController;
 
   @override
   void initState() {
     super.initState();
-    _subscriptionController =
-        TextEditingController(text: widget.document['subscription'].toString() ?? '');
-    _notesController = TextEditingController(text: widget.document['notes'].toString() ?? ''); // Initialize notes controller
+    var data = widget.document.data() as Map<String, dynamic>;
+    _subscriptionController = TextEditingController(text: data['subscription']?.toString() ?? '');
+    _notesController = TextEditingController(text: data['notes']?.toString() ?? '');
   }
 
   @override
@@ -306,18 +295,15 @@ class _EditSubscriptionPageState extends State<EditSubscriptionPage> {
             ),
             const SizedBox(height: 16.0),
             TextField(
-              controller: _notesController, // Bind notes controller
+              controller: _notesController,
               decoration: const InputDecoration(labelText: 'Notes'),
             ),
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {
-                FirebaseFirestore.instance
-                    .collection('eshtrakat')
-                    .doc(widget.document.id)
-                    .update({
+                widget.document.reference.update({
                   'subscription': _subscriptionController.text,
-                  'notes': _notesController.text, // Update notes field
+                  'notes': _notesController.text,
                 });
                 Navigator.pop(context);
               },
