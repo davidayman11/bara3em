@@ -383,7 +383,7 @@ class _AttendancePageState extends State<AttendancePage> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).textTheme.bodyText1?.color,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -391,7 +391,7 @@ class _AttendancePageState extends State<AttendancePage> {
                     '${_selectedNames.length} selected',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Theme.of(context).textTheme.bodyText1?.color,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 8),

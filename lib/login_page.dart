@@ -64,12 +64,12 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 20.0),
             Text(
               'Welcome,',
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
             SizedBox(height: 8.0),
             Text(
               'Sign in to continue!',
-              style: Theme.of(context).textTheme.subtitle1,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             SizedBox(height: 40.0),
             TextField(
@@ -118,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
               Text(
                 _errorMessage,
                 style: TextStyle(
-                  color: Theme.of(context).errorColor,
+                  color: Theme.of(context).colorScheme.error,
                 ),
               ),
           ],
